@@ -15,3 +15,8 @@ output_dir/train_log_ft.txt
 output_dir/train_log_ftzs.txt
 output_dir/train_log_icl.txt
 output_dir/train_log_zs.txt
+tmp_ana_rlt/ft_record_info.jsonl
+tmp_ana_rlt/ftzs_record_info.jsonl
+tmp_ana_rlt/icl_record_info.jsonl
+tmp_ana_rlt/zs_record_info.jsonl
+en_dense_lm_125m.tar.gz
