@@ -1,0 +1,17 @@
+.vscode/launch.json
+.vscode/settings.json
+base_dir/ana_rlt/en_dense_lm_125m/cb/ft/record_info.jsonl
+base_dir/ana_rlt/en_dense_lm_125m/cb/ftzs/record_info.jsonl
+base_dir/ana_rlt/en_dense_lm_125m/cb/icl/record_info.jsonl
+base_dir/ana_rlt/en_dense_lm_125m/cb/zs/record_info.jsonl
+base_dir/ft_gpt/cb/en_dense_lm_125m/0.001/checkpoint_last.pt
+base_dir/ft_gpt/cb/en_dense_lm_125m/0.001/checkpoint1.pt
+base_dir/gpt_icl/encoder.json
+base_dir/gpt_icl/vocab.bpe
+base_dir/gpt_icl/en_dense_lm_125m/dict.txt
+base_dir/gpt_icl/en_dense_lm_125m/model.pt
+base_dir/gpt_icl/en_dense_lm_125m/NOTE
+output_dir/train_log_ft.txt
+output_dir/train_log_ftzs.txt
+output_dir/train_log_icl.txt
+output_dir/train_log_zs.txt
