@@ -334,7 +334,8 @@ class SinusoidalPositionalEmbedding(nn.Module):
         external_qkv=False
     ):
         """Input is expected to be of size [bsz x seqlen]."""
-        bspair = torch.onnx.operators.shape_as_tensor(input)
+        # bspair = torch.onnx.operators.shape_as_tensor(input)
+        bspair = torch.tensor(input.shape)
         bsz, seq_len = bspair[0], bspair[1]
         max_pos = self.padding_idx + 1 + seq_len
         if self.weights is None or max_pos > self.weights.size(0):

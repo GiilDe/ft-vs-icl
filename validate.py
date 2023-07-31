@@ -6,6 +6,7 @@
 """
 Train a new model on one or across multiple GPUs.
 """
+from linearize import LinearizedGPT
 import struprompting
 
 import argparse
@@ -94,7 +95,7 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    # model = LinearizedModel(model)
+    model = LinearizedGPT(model)
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
     logger.info("task: {}".format(task.__class__.__name__))
@@ -529,6 +530,10 @@ def cli_main(
         logger.info(
             f"Started plasma server pid {server.server.pid} {cfg.common.plasma_path}"
         )
+
+    # hack to turn off checkpoints. Wasn't able to turn it off via the
+    cfg.model.checkpoint_activations = False
+    cfg.model.offload_activations = False
 
     if args.profile:
         with torch.cuda.profiler.profile():

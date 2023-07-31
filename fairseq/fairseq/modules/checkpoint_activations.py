@@ -240,3 +240,8 @@ class CheckpointFunction(torch.autograd.Function):
             inp.grad if isinstance(inp, torch.Tensor) else None for inp in inputs
         )
         return (None, None, None) + grads
+    
+    # @staticmethod
+    # def jvp(ctx, *grad_inputs):
+    #     return 
+

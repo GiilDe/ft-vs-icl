@@ -60,6 +60,28 @@ class LinearizedModel(nn.Module):
         )
         return out + dp
 
+class LinearizedGPT(nn.Module):
+    def __init__(
+        self, model: nn.Module, init_model: nn.Module = None
+    ):
+        super().__init__()
+
+        self.original_model = model
+        self.linearized_model = LinearizedModel(model=model, init_model=init_model)
+
+    def forward(self, x):
+        # use the taylorized version of the model.
+        return self.linearized_model(x)
+
+    def __call__(self, x):
+        return self.forward(x)
+
+    def max_positions(self):
+        return self.original_model.max_positions()
+
+    def set_num_updates(self, num_updates):
+        return self.original_model.set_num_updates(num_updates)
+
 
 # class LinearizedImageEncoder(abc.ABC, nn.Module):
 #     """Creates a linearized version of an image encoder."""

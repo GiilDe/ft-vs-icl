@@ -20,3 +20,5 @@ tmp_ana_rlt/ftzs_record_info.jsonl
 tmp_ana_rlt/icl_record_info.jsonl
 tmp_ana_rlt/zs_record_info.jsonl
 en_dense_lm_125m.tar.gz
+__pycache__/linearize.cpython-39.pyc
+__pycache__/utils.cpython-39.pyc
