@@ -14,7 +14,8 @@ import random
 import torch.nn.functional as F
 
 from typing import Any, Dict, Iterator, List
-from fairseq import metrics, modules, utils
+from fairseq.logging import metrics
+from fairseq import modules, utils
 from fairseq.criterions import FairseqCriterion, register_criterion
 from fairseq.dataclass import FairseqDataclass
 from struprompting.data.squad.squad_metrics import compute_f1, compute_exact

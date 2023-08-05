@@ -7,7 +7,8 @@ import logging
 import jsonlines
 
 from typing import Any, Dict, Iterator, List
-from fairseq import metrics, search, tokenizer, utils
+from fairseq.logging import metrics
+from fairseq import search, tokenizer, utils
 from fairseq.optim.amp_optimizer import AMPOptimizer
 
 from fairseq.data import (
