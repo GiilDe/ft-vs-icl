@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from fairseq.dataclass import ChoiceEnum, FairseqDataclass
 from torch import Tensor
+from linearize import LinearizedTLM
 
 import logging
 import json
@@ -52,9 +53,16 @@ class GPTmodel(TransformerLanguageModel):
         )
 
         if args.gpt_model_path != "":
+            if args.gpt_model_path != "base_dir/gpt_icl/en_dense_lm_125m/model.pt" and not isinstance(model, LinearizedTLM):
+                # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
+                model = LinearizedTLM(model) 
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
             model.load_state_dict(state["model"], strict=True, args=args)
-        
+
+            if not isinstance(model, LinearizedTLM):
+                # if we didn't linearize the model previously, do it now
+                model = LinearizedTLM(model)
+
         # ! ICL analysis
         if task.cfg.ana_setting in ['zs', 'ftzs', 'icl']:
             for p in model.parameters():
@@ -253,7 +261,7 @@ class GPTDecoder(TransformerDecoder):
         if self.project_out_dim is not None:
             x = self.project_out_dim(x)
 
-        return x, {"qkv_val": qkv_val}
+        return x, {"qkv_val": qkv_val, "self_attn_out_hiddens": self_attn_out_hiddens}
 
 def make_positions(tensor, padding_idx: int, onnx_trace: bool = False, max_pos=None, external_qkv=False):
     """Replace non-padding symbols with their position numbers.

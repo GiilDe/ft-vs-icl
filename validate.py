@@ -95,7 +95,8 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    model = LinearizedTLM(model)
+    assert isinstance(model, LinearizedTLM)
+
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
     logger.info("task: {}".format(task.__class__.__name__))
@@ -535,6 +536,7 @@ def cli_main(
     cfg.model.checkpoint_activations = False
     cfg.model.offload_activations = False
     cfg.task.optim_group = "all"
+    # cfg.distributed_training.distributed_world_size = 1
 
     if args.profile:
         with torch.cuda.profiler.profile():

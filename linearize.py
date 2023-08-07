@@ -6,8 +6,6 @@ import torch.nn as nn
 from functorch import jvp, make_functional_with_buffers
 from fairseq.models.transformer_lm import TransformerLanguageModel
 
-from utils import DotDict
-
 
 class LinearizedModel(nn.Module):
     """Creates a linearized version of a nn.Module.
