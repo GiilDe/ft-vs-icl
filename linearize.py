@@ -45,7 +45,7 @@ class LinearizedModel(nn.Module):
             name = f"buffer{i}"
             self.register_buffer(name, buffer)
 
-        self.func0 = lambda params, **kwargs: func0(params, self.buffers(), **kwargs)
+        self.func0 = lambda params, x: func0(params, self.buffers(), x)
         # The intial parameters are not trainable.
         for p in self.params0:
             p.requires_grad = False
@@ -62,7 +62,10 @@ class LinearizedModel(nn.Module):
             (tuple(self.params0),),
             (tuple(dparams),),
         )
-        return out + dp
+        x = out[0] + dp[0]
+        extra = {key: out[1][key] + dp[1][key] for key in out[1].keys()}
+        return x, extra
+
 
 class LinearizedTLM(TransformerLanguageModel):
     def __init__(
@@ -70,22 +73,12 @@ class LinearizedTLM(TransformerLanguageModel):
     ):
         super().__init__(model.decoder)
         for p in self.parameters():
-            p.requires_grad = False # don't need to train these as we will train the parameters in the linearized gpt's
+            p.requires_grad = False
+        self.linearized_model = LinearizedModel(model=model, init_model=init_model)
 
-        original_forward = model.decoder.forward
-        decoder_extract_features_x = model.decoder
-        decoder_extract_features_x.forward = lambda **kwargs: decoder_extract_features_x.extract_features_scriptable(**kwargs)[0]
-        self.linearized_decoder_extract_features_x = LinearizedModel(model=decoder_extract_features_x, init_model=decoder_extract_features_x)
+    def forward(self, x):
+        # use the taylorized version of the model.
+        return self.linearized_model(x)
 
-        decoder_extract_features_extra = model.decoder
-        decoder_extract_features_extra.forward = lambda **kwargs: decoder_extract_features_extra.extract_features_scriptable(**kwargs)[1]
-        self.linearized_decoder_extract_features_extra = LinearizedModel(model=decoder_extract_features_extra, init_model=decoder_extract_features_extra)
-
-        decoder_output_layer = model.decoder
-        decoder_output_layer.forward = decoder_output_layer.output_layer
-        self.linearized_decoder_output_layer = LinearizedModel(model=decoder_output_layer, init_model=decoder_output_layer)
-
-        model.decoder.extract_features_scriptable = lambda **kwargs: (self.linearized_decoder_extract_features_x.__call__(**kwargs), self.linearized_decoder_extract_features_extra.__call__(**kwargs))
-        model.decoder.output_layer = self.linearized_decoder_output_layer.__call__
-
-        model.decoder.forward = original_forward
+    def __call__(self, x):
+        return self.forward(x)

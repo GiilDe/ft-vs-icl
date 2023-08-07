@@ -1210,7 +1210,7 @@ class Trainer(object):
 
     def get_meter(self, name):
         """[deprecated] Get a specific meter by name."""
-        from fairseq import meters
+        from fairseq.logging import meters
 
         if "get_meter" not in self._warn_once:
             self._warn_once.add("get_meter")
