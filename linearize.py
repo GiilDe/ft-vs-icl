@@ -7,7 +7,6 @@ from functorch import jvp, make_functional_with_buffers
 from fairseq.models.transformer_lm import TransformerLanguageModel
 
 from utils import DotDict
-import torch.nn.functional as F
 
 
 class LinearizedModel(nn.Module):
@@ -46,7 +45,7 @@ class LinearizedModel(nn.Module):
             name = f"buffer{i}"
             self.register_buffer(name, buffer)
 
-        self.func0 = lambda params, x: func0(params, self.buffers(), x)
+        self.func0 = lambda params, **kwargs: func0(params, self.buffers(), **kwargs)
         # The intial parameters are not trainable.
         for p in self.params0:
             p.requires_grad = False
@@ -55,114 +54,38 @@ class LinearizedModel(nn.Module):
         for p in self.params:
             p.requires_grad = True
 
-    def __call__(self, x) -> torch.Tensor:
+    def __call__(self, **kwargs) -> torch.Tensor:
         """Computes the linearized model output using a first-order Taylor decomposition."""
         dparams = [p - p0 for p, p0 in zip(self.params, self.params0)]
         out, dp = jvp(
-            lambda param: self.func0(param, x)[0],
+            lambda param: self.func0(param, **kwargs),
             (tuple(self.params0),),
             (tuple(dparams),),
         )
-        return out + dp, None
+        return out + dp
 
-class LinearizedGPT(nn.Module):
+class LinearizedTLM(TransformerLanguageModel):
     def __init__(
         self, model: TransformerLanguageModel, init_model: TransformerLanguageModel = None
     ):
-        super().__init__()
-        # self.original_model = model
-        # del self.module.original_model
-        self.linearized_model = LinearizedModel(model=model, init_model=init_model)
+        super().__init__(model.decoder)
+        for p in self.parameters():
+            p.requires_grad = False # don't need to train these as we will train the parameters in the linearized gpt's
 
-    def forward(self, x):
-        # use the taylorized version of the model.
-        return self.linearized_model(x)
+        original_forward = model.decoder.forward
+        decoder_extract_features_x = model.decoder
+        decoder_extract_features_x.forward = lambda **kwargs: decoder_extract_features_x.extract_features_scriptable(**kwargs)[0]
+        self.linearized_decoder_extract_features_x = LinearizedModel(model=decoder_extract_features_x, init_model=decoder_extract_features_x)
 
-    def __call__(self, x):
-        return self.forward(x)
+        decoder_extract_features_extra = model.decoder
+        decoder_extract_features_extra.forward = lambda **kwargs: decoder_extract_features_extra.extract_features_scriptable(**kwargs)[1]
+        self.linearized_decoder_extract_features_extra = LinearizedModel(model=decoder_extract_features_extra, init_model=decoder_extract_features_extra)
 
-    def max_positions(self):
-        """Maximum length supported by the model."""
-        return 1e6 
+        decoder_output_layer = model.decoder
+        decoder_output_layer.forward = decoder_output_layer.output_layer
+        self.linearized_decoder_output_layer = LinearizedModel(model=decoder_output_layer, init_model=decoder_output_layer)
 
-    def set_num_updates(self, num_updates):
-        """State from trainer to pass along to model at every update."""
-        for m in self.modules():
-            if hasattr(m, "set_num_updates") and m != self:
-                m.set_num_updates(num_updates)
-                
-# class LinearizedImageEncoder(abc.ABC, nn.Module):
-#     """Creates a linearized version of an image encoder."""
+        model.decoder.extract_features_scriptable = lambda **kwargs: (self.linearized_decoder_extract_features_x.__call__(**kwargs), self.linearized_decoder_extract_features_extra.__call__(**kwargs))
+        model.decoder.output_layer = self.linearized_decoder_output_layer.__call__
 
-#     def __init__(
-#         self, args=None, keep_lang=False, image_encoder=None, init_encoder=None
-#     ):
-#         super().__init__()
-#         if image_encoder is None:
-#             image_encoder = ImageEncoder(args, keep_lang)
-#         if init_encoder is None:
-#             init_encoder = image_encoder
-
-#         # Copy the attributes from the image encoder.
-#         self.train_preprocess = image_encoder.train_preprocess
-#         self.val_preprocess = image_encoder.val_preprocess
-#         self.cache_dir = image_encoder.cache_dir
-
-#         self._model_name = self._get_name(args.model)
-#         self.model = LinearizedModel(init_model=init_encoder, model=image_encoder)
-
-#     def _get_name(self, model_name):
-#         if "__pretrained__" in model_name:
-#             model_name, _ = model_name.split("__pretrained__", "")
-#         return model_name
-
-#     def forward(self, x):
-#         # use the taylorized version of the model.
-#         return self.model(x)
-
-#     def __call__(self, x):
-#         return self.forward(x)
-
-#     def save(self, filename):
-#         """Saves the linearized image encoder.
-
-#         We save the model name in the state dict so that we can load the
-#         correct model when loading the linearized image encoder. Directly using
-#         torch.save would not work becuse func0 is not serializable.
-
-#         Args:
-#             filename (str): The path to save the taylorized image encoder.
-#         """
-#         if os.path.dirname(filename) != "":
-#             os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-#         state_dict = self.state_dict()
-#         state_dict["model_name"] = self._model_name
-
-#         torch.save(state_dict, filename)
-
-#     @classmethod
-#     def load(cls, filename):
-#         """Loads a linearized image encoder.
-
-#         It first loads the state dict with the model name and then creates the
-#         correct model and loads the state dict.
-
-#         Args:
-#             filename (str): The path to the taylorized image encoder.
-
-#         Returns:
-#             LinearizedImageEncoder: The loaded taylorized image encoder.
-#         """
-#         print(f"Loading image encoder from {filename}")
-#         state_dict = torch.load(filename, map_location="cpu")
-
-#         # ImageEncoder expects a DotDict
-#         args = DotDict({"model": state_dict["model_name"]})
-#         taylorized_encoder = cls(args)
-
-#         # Remove the model name from the state dict so that we can load the
-#         # model.
-#         state_dict.pop("model_name")
-#         taylorized_encoder.load_state_dict(state_dict)
-#         return taylorized_encoder
+        model.decoder.forward = original_forward

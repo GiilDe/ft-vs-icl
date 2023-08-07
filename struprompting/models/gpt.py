@@ -116,7 +116,7 @@ class GPTDecoder(TransformerDecoder):
         **kwargs
     ):
         x, extra = self.extract_features_scriptable(
-            prev_output_tokens,
+            prev_output_tokens=prev_output_tokens,
             encoder_out=encoder_out,
             incremental_state=incremental_state,
             full_context_alignment=full_context_alignment,
@@ -128,7 +128,7 @@ class GPTDecoder(TransformerDecoder):
         )
 
         if not features_only:
-            x = self.output_layer(x)
+            x = self.output_layer(features=x)
         return x, extra
 
     def extract_features_scriptable(
@@ -253,7 +253,7 @@ class GPTDecoder(TransformerDecoder):
         if self.project_out_dim is not None:
             x = self.project_out_dim(x)
 
-        return x, {"attn": [attn], "inner_states": inner_states, "qkv_val":qkv_val, "self_attn_out_hiddens":self_attn_out_hiddens}
+        return x, {"qkv_val": qkv_val}
 
 def make_positions(tensor, padding_idx: int, onnx_trace: bool = False, max_pos=None, external_qkv=False):
     """Replace non-padding symbols with their position numbers.

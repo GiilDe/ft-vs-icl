@@ -6,7 +6,7 @@
 """
 Train a new model on one or across multiple GPUs.
 """
-from linearize import LinearizedGPT
+from linearize import LinearizedTLM
 import struprompting
 
 import argparse
@@ -95,7 +95,7 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    # model = LinearizedGPT(model)
+    model = LinearizedTLM(model)
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
     logger.info("task: {}".format(task.__class__.__name__))
