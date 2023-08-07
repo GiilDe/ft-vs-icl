@@ -95,7 +95,7 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    model = LinearizedGPT(model)
+    model = LinearizedGPT(model=model)
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
     logger.info("task: {}".format(task.__class__.__name__))
@@ -534,6 +534,8 @@ def cli_main(
     # hack to turn off checkpoints. Wasn't able to turn it off via the
     cfg.model.checkpoint_activations = False
     cfg.model.offload_activations = False
+    # cfg.distributed_training.distributed_world_size = 1
+    cfg.task.optim_group = "all"
 
     if args.profile:
         with torch.cuda.profiler.profile():
@@ -541,9 +543,6 @@ def cli_main(
                 distributed_utils.call_main(cfg, main)
     else:
         distributed_utils.call_main(cfg, main)
-
-    # if cfg.common.use_plasma_view:
-    #     server.server.kill()
 
 
 if __name__ == "__main__":

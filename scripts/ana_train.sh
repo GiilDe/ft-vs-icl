@@ -128,11 +128,8 @@ python3 validate.py "-" \
     --max-epoch $max_epoch \
     --curriculum 1000000 \
     --max-update 1000000 \
-    --fp16 \
     --eval-data $TASK \
-    --fp16-init-scale 4 \
     --checkpoint-activations \
-    --fp16-scale-window 256 \
     --seed $SEED \
     --reset-dataloader \
     --k $K \
@@ -151,7 +148,5 @@ python3 validate.py "-" \
     --validate-interval 1000000 \
     --disable-validation \
     --optim-group $optim_group \
-    --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt 
-    # --checkpoint-activations False \
-    # --offload-activations False
+    --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt
 

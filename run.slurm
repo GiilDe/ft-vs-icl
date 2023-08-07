@@ -12,5 +12,5 @@
 #SBATCH --gpus=1 # GPUs in total
 #SBATCH --account=gpu-students
 
-
-bash run.sh en_dense_lm_125m gptmodel_small cb 4 3 0 output_dir base_dir 0.001
+#---------${model_name} ${model_arch} ${task} ${k} ${seed} ${perm_id} ${output_path} ${base_dir} ${lr}
+bash run.sh en_dense_lm_125m gptmodel_small cb 20 3 0 output_dir base_dir 0.08
