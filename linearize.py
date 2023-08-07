@@ -54,11 +54,11 @@ class LinearizedModel(nn.Module):
         for p in self.params:
             p.requires_grad = True
 
-    def __call__(self, **kwargs) -> torch.Tensor:
+    def __call__(self, x) -> torch.Tensor:
         """Computes the linearized model output using a first-order Taylor decomposition."""
         dparams = [p - p0 for p, p0 in zip(self.params, self.params0)]
         out, dp = jvp(
-            lambda param: self.func0(param, **kwargs),
+            lambda param: self.func0(param, x),
             (tuple(self.params0),),
             (tuple(dparams),),
         )
