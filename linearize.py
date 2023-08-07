@@ -43,6 +43,9 @@ class LinearizedModel(nn.Module):
             name = f"buffer{i}"
             self.register_buffer(name, buffer)
 
+        for t1, t2 in zip(buffers0, self.buffers()):    
+            assert torch.equal(t1, t2)
+            
         self.func0 = lambda params, x: func0(params, self.buffers(), x)
         # The intial parameters are not trainable.
         for p in self.params0:
