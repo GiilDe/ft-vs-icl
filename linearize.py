@@ -4,8 +4,10 @@ import os
 import torch
 import torch.nn as nn
 from functorch import jvp, make_functional_with_buffers
+from fairseq.models.transformer_lm import TransformerLanguageModel
 
 from utils import DotDict
+import torch.nn.functional as F
 
 
 class LinearizedModel(nn.Module):
@@ -29,10 +31,9 @@ class LinearizedModel(nn.Module):
         if init_model is None:
             init_model = model
 
-        func0, params0, self.buffers0 = make_functional_with_buffers(
+        func0, params0, buffers0 = make_functional_with_buffers(
             init_model.eval(), disable_autograd_tracking=True
         )
-        self.func0 = lambda params, x: func0(params, self.buffers0, x)
 
         _, params, _ = make_functional_with_buffers(
             model, disable_autograd_tracking=True
@@ -41,7 +42,11 @@ class LinearizedModel(nn.Module):
         self.params = nn.ParameterList(params)
         self.params0 = nn.ParameterList(params0)
         self._model_name = model.__class__.__name__
+        for i, buffer in enumerate(buffers0):
+            name = f"buffer{i}"
+            self.register_buffer(name, buffer)
 
+        self.func0 = lambda params, x: func0(params, self.buffers(), x)
         # The intial parameters are not trainable.
         for p in self.params0:
             p.requires_grad = False
@@ -54,19 +59,19 @@ class LinearizedModel(nn.Module):
         """Computes the linearized model output using a first-order Taylor decomposition."""
         dparams = [p - p0 for p, p0 in zip(self.params, self.params0)]
         out, dp = jvp(
-            lambda param: self.func0(param, x),
+            lambda param: self.func0(param, x)[0],
             (tuple(self.params0),),
             (tuple(dparams),),
         )
-        return out + dp
+        return out + dp, None
 
 class LinearizedGPT(nn.Module):
     def __init__(
-        self, model: nn.Module, init_model: nn.Module = None
+        self, model: TransformerLanguageModel, init_model: TransformerLanguageModel = None
     ):
         super().__init__()
-
-        self.original_model = model
+        # self.original_model = model
+        # del self.module.original_model
         self.linearized_model = LinearizedModel(model=model, init_model=init_model)
 
     def forward(self, x):
@@ -77,12 +82,15 @@ class LinearizedGPT(nn.Module):
         return self.forward(x)
 
     def max_positions(self):
-        return self.original_model.max_positions()
+        """Maximum length supported by the model."""
+        return 1e6 
 
     def set_num_updates(self, num_updates):
-        return self.original_model.set_num_updates(num_updates)
-
-
+        """State from trainer to pass along to model at every update."""
+        for m in self.modules():
+            if hasattr(m, "set_num_updates") and m != self:
+                m.set_num_updates(num_updates)
+                
 # class LinearizedImageEncoder(abc.ABC, nn.Module):
 #     """Creates a linearized version of an image encoder."""
 
