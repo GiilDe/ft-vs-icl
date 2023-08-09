@@ -535,7 +535,6 @@ def cli_main(
     # hack to turn off checkpoints. Wasn't able to turn it off via the
     cfg.model.checkpoint_activations = False
     cfg.model.offload_activations = False
-    cfg.task.optim_group = "all"
     # cfg.distributed_training.distributed_world_size = 1
 
     if args.profile:
