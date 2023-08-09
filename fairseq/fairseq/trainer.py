@@ -29,6 +29,8 @@ from fairseq.optim import lr_scheduler
 from fairseq.utils import safe_hasattr
 from omegaconf import OmegaConf
 
+from linearize import LinearizedTLM
+
 logger = logging.getLogger(__name__)
 
 
@@ -286,17 +288,22 @@ class Trainer(object):
         return self._lr_scheduler
 
     def _build_optimizer(self):
+        named_params = (
+            self.model.named_parameters()
+            if not isinstance(self.model, LinearizedTLM)
+            else self.model.named_parameters_for_setting_grad()
+        )
         if self.cfg.task.optim_group == 'all':
             params = list(
                 filter(
                     lambda p: p.requires_grad,
-                    chain(self.model.parameters(), self.criterion.parameters()),
+                    chain([param for _, param in named_params], self.criterion.parameters()),
                 )
             )
         elif self.cfg.task.optim_group == 'attn_kv':
             name_params = list(filter(
                     lambda np: np[1].requires_grad and ('k_proj' in np[0] or 'v_proj' in np[0]),
-                    chain(self.model.named_parameters(), self.criterion.named_parameters()),
+                    chain(named_params, self.criterion.named_parameters()),
             ))
             params = [np[1] for np in name_params]
             # names = [np[0] for np in name_params]

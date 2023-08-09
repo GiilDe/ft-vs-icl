@@ -18,14 +18,14 @@ from fairseq import utils
 from fairseq.utils import safe_getattr, safe_hasattr
 
 from fairseq.models import (
-  BaseFairseqModel,
-  register_model,
-  register_model_architecture,
+    BaseFairseqModel,
+    register_model,
+    register_model_architecture,
 )
 from fairseq.models.transformer_lm import (
-  TransformerLanguageModelConfig,
-  TransformerLanguageModel,
-  base_gpt3_architecture,
+    TransformerLanguageModelConfig,
+    TransformerLanguageModel,
+    base_gpt3_architecture,
 )
 from fairseq.models.transformer.transformer_decoder import TransformerDecoder
 
@@ -36,11 +36,11 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         default="",
         metadata={"help": "gpt checkpoint path"},
     )
-    
+    use_linearization: bool = field(default=True)
+
 
 @register_model("gptmodel", dataclass=GPTModelConfig)
 class GPTmodel(TransformerLanguageModel):
-
     @classmethod
     def build_model(cls, args, task):
         model = TransformerLanguageModel.build_model(args, task)
@@ -53,27 +53,35 @@ class GPTmodel(TransformerLanguageModel):
         )
 
         if args.gpt_model_path != "":
-            if args.gpt_model_path != "base_dir/gpt_icl/en_dense_lm_125m/model.pt" and not isinstance(model, LinearizedTLM):
+            if (
+                args.use_linearization
+                and args.gpt_model_path != "base_dir/gpt_icl/en_dense_lm_125m/model.pt"
+                and not isinstance(model, LinearizedTLM)
+            ):
                 # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
-                model = LinearizedTLM(model) 
+                model = LinearizedTLM(model)
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
             model.load_state_dict(state["model"], strict=True, args=args)
 
-            if not isinstance(model, LinearizedTLM):
+            if args.use_linearization and not isinstance(model, LinearizedTLM):
                 # if we didn't linearize the model previously, do it now
                 model = LinearizedTLM(model)
 
         # ! ICL analysis
-        if task.cfg.ana_setting in ['zs', 'ftzs', 'icl']:
+        if task.cfg.ana_setting in ["zs", "ftzs", "icl"]:
             for p in model.parameters():
                 p.requires_grad = False
 
-        named_params = model.named_parameters() if not isinstance(model, LinearizedTLM) else model.named_parameters_for_setting_grad()
+        named_params = (
+            model.named_parameters()
+            if not isinstance(model, LinearizedTLM)
+            else model.named_parameters_for_setting_grad()
+        )
         for n, p in named_params:
             if "bias" in n:
-                p.requires_grad = True 
+                p.requires_grad = True
                 break
-        
+
         return model
 
 
@@ -86,8 +94,8 @@ class GPTDecoder(TransformerDecoder):
         no_encoder_attn=False,
         output_projection=None,
         bos=0,
-        pad=1, 
-        eos=2
+        pad=1,
+        eos=2,
     ):
         self.alpha = None
         super().__init__(
@@ -107,7 +115,7 @@ class GPTDecoder(TransformerDecoder):
         self.context_keys = None
         self.context_values = None
         self.demons_num = 0
-    
+
     def forward(
         self,
         prev_output_tokens,
@@ -121,8 +129,8 @@ class GPTDecoder(TransformerDecoder):
         return_all_hiddens: bool = False,
         attention_mask: Optional[Tensor] = None,
         positions: Optional[Tensor] = None,
-        external_qkv: bool=False,
-        **kwargs
+        external_qkv: bool = False,
+        **kwargs,
     ):
         x, extra = self.extract_features_scriptable(
             prev_output_tokens=prev_output_tokens,
@@ -150,7 +158,7 @@ class GPTDecoder(TransformerDecoder):
         alignment_heads: Optional[int] = None,
         attention_mask: Optional[Tensor] = None,
         positions: Optional[Tensor] = None,
-        external_qkv: bool=False,
+        external_qkv: bool = False,
     ):
         """
         Similar to *extract_features_scriptable* in transformer_decoder.py
@@ -173,7 +181,9 @@ class GPTDecoder(TransformerDecoder):
         # embed positions
         if self.embed_positions is not None:
             positions = self.embed_positions(
-                prev_output_tokens, incremental_state=incremental_state, external_qkv=external_qkv
+                prev_output_tokens,
+                incremental_state=incremental_state,
+                external_qkv=external_qkv,
             )
 
         if incremental_state is not None:
@@ -264,7 +274,10 @@ class GPTDecoder(TransformerDecoder):
 
         return x, {"qkv_val": qkv_val, "self_attn_out_hiddens": self_attn_out_hiddens}
 
-def make_positions(tensor, padding_idx: int, onnx_trace: bool = False, max_pos=None, external_qkv=False):
+
+def make_positions(
+    tensor, padding_idx: int, onnx_trace: bool = False, max_pos=None, external_qkv=False
+):
     """Replace non-padding symbols with their position numbers.
 
     Position numbers begin at padding_idx+1. Padding symbols are ignored.
@@ -278,7 +291,7 @@ def make_positions(tensor, padding_idx: int, onnx_trace: bool = False, max_pos=N
     mask = tensor.ne(padding_idx).int()
 
     if external_qkv == False and max_pos > 0:
-        # left padding 
+        # left padding
         pos = torch.cumsum(mask, dim=1).long()
         max_pos_cur = pos.max(-1)[0]
         pos += (max_pos - max_pos_cur + 1).unsqueeze(-1)
@@ -286,8 +299,9 @@ def make_positions(tensor, padding_idx: int, onnx_trace: bool = False, max_pos=N
         mask = tensor.ne(padding_idx).int()
         pos = torch.cumsum(mask, dim=1) + max_pos
     pos = (pos.type_as(mask) * mask).long() + padding_idx
-    pos[:,0] = padding_idx + 1
+    pos[:, 0] = padding_idx + 1
     return pos
+
 
 class SinusoidalPositionalEmbedding(nn.Module):
     """This module produces sinusoidal positional embeddings of any length.
@@ -340,7 +354,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
         input,
         incremental_state: Optional[Any] = None,
         timestep: Optional[Tensor] = None,
-        external_qkv=False
+        external_qkv=False,
     ):
         """Input is expected to be of size [bsz x seqlen]."""
         # bspair = torch.onnx.operators.shape_as_tensor(input)
@@ -366,7 +380,11 @@ class SinusoidalPositionalEmbedding(nn.Module):
             return self.weights[self.padding_idx + pos, :].expand(bsz, 1, -1)
 
         positions = make_positions(
-            input, self.padding_idx, onnx_trace=self.onnx_trace, external_qkv=external_qkv, max_pos=self.max_pos_train
+            input,
+            self.padding_idx,
+            onnx_trace=self.onnx_trace,
+            external_qkv=external_qkv,
+            max_pos=self.max_pos_train,
         )
 
         if self.onnx_trace:
@@ -412,6 +430,7 @@ def gptmodel_large(args):
         args.checkpoint_activations = True
     base_gpt3_architecture(args)
 
+
 @register_model_architecture("gptmodel", "gptmodel_xl")
 def gptmodel_xl(args):
     # 2.7B params
@@ -425,6 +444,7 @@ def gptmodel_xl(args):
         args.checkpoint_activations = True
     base_gpt3_architecture(args)
 
+
 @register_model_architecture("gptmodel", "gptmodel_xxl")
 def gptmodel_xl(args):
     # 6.7B params
@@ -437,6 +457,7 @@ def gptmodel_xl(args):
     if args.offload_activations:
         args.checkpoint_activations = True
     base_gpt3_architecture(args)
+
 
 @register_model_architecture("gptmodel", "gptmodel_huge")
 def gptmodel_huge(args):

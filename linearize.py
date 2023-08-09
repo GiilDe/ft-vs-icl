@@ -70,9 +70,9 @@ class LinearizedModel(nn.Module):
         for p in self.params0:
             p.requires_grad = False
 
-        # # The params are.
-        # for p in self.params:
-        #     p.requires_grad = True
+        # The params are.
+        for p in self.params:
+            p.requires_grad = True
 
     def __call__(self, x) -> torch.Tensor:
         """Computes the linearized model output using a first-order Taylor decomposition."""
