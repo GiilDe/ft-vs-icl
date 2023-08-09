@@ -1,4 +1,5 @@
 import abc
+import copy
 import os
 
 import torch
@@ -22,6 +23,7 @@ class LinearizedModel(nn.Module):
             provided, `model` is used as the initialization model.
     """
 
+    parmas0_sign = "<0>"
     def __init__(self, model: nn.Module, init_model: nn.Module = None) -> None:
         """Initializes the linearized model."""
         super().__init__()
@@ -50,7 +52,7 @@ class LinearizedModel(nn.Module):
                 param1, param_original_model
             )  # sanity check
             param_original_name_processed = param_original_name.replace(".", "_") # param names can't have dots
-            self.register_parameter(param_original_name_processed + "_0", param0)
+            self.register_parameter(param_original_name_processed + self.parmas0_sign, param0)
             self.register_parameter(param_original_name_processed, param1)
 
         for buffer, model_named_buffer in zip(buffers0, model.named_buffers()):
@@ -68,9 +70,9 @@ class LinearizedModel(nn.Module):
         for p in self.params0:
             p.requires_grad = False
 
-        # The params are.
-        for p in self.params:
-            p.requires_grad = True
+        # # The params are.
+        # for p in self.params:
+        #     p.requires_grad = True
 
     def __call__(self, x) -> torch.Tensor:
         """Computes the linearized model output using a first-order Taylor decomposition."""
@@ -86,28 +88,40 @@ class LinearizedModel(nn.Module):
 
 
 class LinearizedTLM(TransformerLanguageModel):
+    def named_parameters(self, recurse=True):
+        return self.linearized_model.named_parameters(recurse=True)
+
+    def named_parameters_for_setting_grad(self):
+        return [name_param for name_param in self.named_parameters() if self.linearized_model.parmas0_sign not in name_param[0]]
+
+    def named_buffers(self, recurse=True):
+        return self.linearized_model.named_buffers(recurse=True)
+
     def __init__(
         self,
         model: TransformerLanguageModel,
         init_model: TransformerLanguageModel = None,
     ):
-        super().__init__(model.decoder)
-        for p in self.parameters():
+        model_copy = copy.deepcopy(model)
+        for p in model.parameters():
             p.requires_grad = False
-        self.linearized_model = LinearizedModel(model=model, init_model=init_model)
+            p.data = torch.empty(0)
+        super().__init__(model.decoder)
+        self.linearized_model = LinearizedModel(model=model_copy, init_model=model_copy)
 
         assert len(
-            list(
-                filter(
-                    lambda named_param: named_param[1].requires_grad,
-                    self.named_parameters(),
-                )
-            )
+            list(self.named_parameters())
+        )/2 == len(
+            list(model.named_parameters())
+        )
+
+        assert len(
+            list(self.named_parameters_for_setting_grad())
         ) == len(
             list(model.named_parameters())
-        )  # the linearized model should have twice the number of parameters as the original model, but only half of them are trainable.
+        )
 
-        assert len(list(self.linearized_model.buffers())) == len(
+        assert len(list(self.named_buffers())) == len(
             list(model.buffers())
         )  # the linearized model should have the same number of buffers as the original model. Self also contains the model.decoder buffers (redundant and never used) hence comparing with self.linearized_model
 

@@ -68,7 +68,8 @@ class GPTmodel(TransformerLanguageModel):
             for p in model.parameters():
                 p.requires_grad = False
 
-        for n, p in model.named_parameters():
+        named_params = model.named_parameters() if not isinstance(model, LinearizedTLM) else model.named_parameters_for_setting_grad()
+        for n, p in named_params:
             if "bias" in n:
                 p.requires_grad = True 
                 break
