@@ -55,7 +55,7 @@ class GPTmodel(TransformerLanguageModel):
         if args.gpt_model_path != "":
             if (
                 args.use_linearization
-                and args.gpt_model_path != "base_dir/gpt_icl/en_dense_lm_125m/model.pt"
+                and "gpt_icl" not in args.gpt_model_path # if we're loading the original checkpoint, don't linearize
                 and not isinstance(model, LinearizedTLM)
             ):
                 # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
