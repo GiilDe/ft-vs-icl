@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 from functorch import jvp, make_functional_with_buffers
 from fairseq.models.transformer_lm import TransformerLanguageModel
+from torch.func import functional_call
+from torch import autocast
 
 
 class LinearizedModel(nn.Module):
@@ -24,6 +26,7 @@ class LinearizedModel(nn.Module):
     """
 
     parmas0_sign = "<0>"
+
     def __init__(self, model: nn.Module, init_model: nn.Module = None) -> None:
         """Initializes the linearized model."""
         super().__init__()
@@ -51,13 +54,19 @@ class LinearizedModel(nn.Module):
             assert torch.equal(param0, param_original_model) and torch.equal(
                 param1, param_original_model
             )  # sanity check
-            param_original_name_processed = param_original_name.replace(".", "_") # param names can't have dots
-            self.register_parameter(param_original_name_processed + self.parmas0_sign, param0)
+            param_original_name_processed = param_original_name.replace(
+                ".", "_"
+            )  # param names can't have dots
+            self.register_parameter(
+                param_original_name_processed + self.parmas0_sign, param0
+            )
             self.register_parameter(param_original_name_processed, param1)
 
         for buffer, model_named_buffer in zip(buffers0, model.named_buffers()):
             buffer_original_name, buffer_original_model = model_named_buffer
-            buffer_original_name_processed = buffer_original_name.replace(".", "_") # buffer names can't have dots
+            buffer_original_name_processed = buffer_original_name.replace(
+                ".", "_"
+            )  # buffer names can't have dots
             assert torch.equal(buffer, buffer_original_model)  # sanity check
             self.register_buffer(buffer_original_name_processed, buffer)
 
@@ -74,6 +83,7 @@ class LinearizedModel(nn.Module):
         for p in self.params:
             p.requires_grad = True
 
+    @autocast("cuda")
     def __call__(self, x) -> torch.Tensor:
         """Computes the linearized model output using a first-order Taylor decomposition."""
         dparams = [p - p0 for p, p0 in zip(self.params, self.params0)]
@@ -92,7 +102,11 @@ class LinearizedTLM(TransformerLanguageModel):
         return self.linearized_model.named_parameters(recurse=True)
 
     def named_parameters_for_setting_grad(self):
-        return [name_param for name_param in self.named_parameters() if self.linearized_model.parmas0_sign not in name_param[0]]
+        return [
+            name_param
+            for name_param in self.named_parameters()
+            if self.linearized_model.parmas0_sign not in name_param[0]
+        ]
 
     def named_buffers(self, recurse=True):
         return self.linearized_model.named_buffers(recurse=True)
@@ -108,16 +122,13 @@ class LinearizedTLM(TransformerLanguageModel):
             p.data = torch.empty(0)
         super().__init__(model.decoder)
         self.linearized_model = LinearizedModel(model=model_copy, init_model=model_copy)
+        del model_copy
 
-        assert len(
-            list(self.named_parameters())
-        )/2 == len(
+        assert len(list(self.named_parameters())) / 2 == len(
             list(model.named_parameters())
         )
 
-        assert len(
-            list(self.named_parameters_for_setting_grad())
-        ) == len(
+        assert len(list(self.named_parameters_for_setting_grad())) == len(
             list(model.named_parameters())
         )
 

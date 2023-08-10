@@ -151,5 +151,6 @@ python3 validate.py "-" \
     --validate-interval 1000000 \
     --disable-validation \
     --optim-group $optim_group \
-    --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt
+    --distributed-world-size $NGPU \
+    --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt \
 
