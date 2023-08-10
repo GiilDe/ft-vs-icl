@@ -95,7 +95,7 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    assert isinstance(model, LinearizedTLM)
+    assert isinstance(model, LinearizedTLM) == cfg.model.use_linearization
 
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
