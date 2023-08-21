@@ -27,7 +27,12 @@ class LinearizedModel(nn.Module):
 
     parmas0_sign = "<0>"
 
-    def __init__(self, model: nn.Module, init_model: nn.Module = None) -> None:
+    def __init__(
+        self,
+        model: nn.Module,
+        init_model: nn.Module = None,
+        sum_extra_jvp_results: bool = True,
+    ) -> None:
         """Initializes the linearized model."""
         super().__init__()
         if init_model is None:
@@ -70,10 +75,6 @@ class LinearizedModel(nn.Module):
             assert torch.equal(buffer, buffer_original_model)  # sanity check
             self.register_buffer(buffer_original_name_processed, buffer)
 
-        # for i, buffer in enumerate(buffers0):
-        #     name = f"buffer{i}"
-        #     self.register_buffer(name, buffer)
-
         self.func0 = lambda params, x: func0(params, self.buffers(), x)
         # The intial parameters are not trainable.
         for p in self.params0:
@@ -82,6 +83,8 @@ class LinearizedModel(nn.Module):
         # The params are.
         for p in self.params:
             p.requires_grad = True
+
+        self.sum_extra_jvp_results = sum_extra_jvp_results
 
     @autocast("cuda")
     def __call__(self, x) -> torch.Tensor:
@@ -93,7 +96,33 @@ class LinearizedModel(nn.Module):
             (tuple(dparams),),
         )
         x = out[0] + dp[0]
-        extra = {key: out[1][key] + dp[1][key] for key in out[1].keys()}
+        if self.sum_extra_jvp_results:
+            extra = {}
+            if "attn" in out[1]:
+                extra["attn"] = [
+                    out[1]["attn"][i] + dp[1]["attn"][i]
+                    for i in range(len(out[1]["attn"]))
+                ]
+            extra["inner_states"] = [
+                out[1]["inner_states"][i] + dp[1]["inner_states"][i]
+                for i in range(len(out[1]["inner_states"]))
+            ]
+            extra["qkv_val"] = []
+            for qkv_val_out, qkv_val_dp in zip(out[1]["qkv_val"], dp[1]["qkv_val"]):
+                qkv_val_sum = {
+                    key: qkv_val_out[key] + qkv_val_dp[key]
+                    for key in qkv_val_out.keys()
+                }
+                extra["qkv_val"].append(qkv_val_sum)
+            extra["self_attn_out_hiddens"] = [
+                out[1]["self_attn_out_hiddens"][i] + dp[1]["self_attn_out_hiddens"][i]
+                for i in range(len(out[1]["self_attn_out_hiddens"]))
+            ]
+        else:
+            extra = out[1]
+        if "attn" not in extra:
+            extra["attn"] = [None]
+
         return x, extra
 
 
@@ -115,13 +144,18 @@ class LinearizedTLM(TransformerLanguageModel):
         self,
         model: TransformerLanguageModel,
         init_model: TransformerLanguageModel = None,
+        sum_extra_jvp_results: bool = True,
     ):
         model_copy = copy.deepcopy(model)
         for p in model.parameters():
             p.requires_grad = False
             p.data = torch.empty(0)
         super().__init__(model.decoder)
-        self.linearized_model = LinearizedModel(model=model_copy, init_model=model_copy)
+        self.linearized_model = LinearizedModel(
+            model=model_copy,
+            init_model=model_copy,
+            sum_extra_jvp_results=sum_extra_jvp_results,
+        )
         del model_copy
 
         assert len(list(self.named_parameters())) / 2 == len(

@@ -37,6 +37,7 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         metadata={"help": "gpt checkpoint path"},
     )
     use_linearization: bool = field(default=True)
+    sum_extra_jvp_result: bool = field(default=True)
 
 
 @register_model("gptmodel", dataclass=GPTModelConfig)
@@ -58,8 +59,9 @@ class GPTmodel(TransformerLanguageModel):
                 and "gpt_icl" not in args.gpt_model_path # if we're loading the original checkpoint, don't linearize
                 and not isinstance(model, LinearizedTLM)
             ):
+                logging.info("Loading linearization")
                 # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
-                model = LinearizedTLM(model)
+                model = LinearizedTLM(model, args.sum_extra_jvp_result)
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
             model.load_state_dict(state["model"], strict=True, args=args)
 
@@ -272,7 +274,10 @@ class GPTDecoder(TransformerDecoder):
         if self.project_out_dim is not None:
             x = self.project_out_dim(x)
 
-        return x, {"qkv_val": qkv_val, "self_attn_out_hiddens": self_attn_out_hiddens}
+        extra = {"attn": [attn], "inner_states": inner_states, "qkv_val": qkv_val, "self_attn_out_hiddens": self_attn_out_hiddens}
+        if attn is None:
+            del extra["attn"]
+        return x, extra
 
 
 def make_positions(

@@ -22,3 +22,11 @@ tmp_ana_rlt/zs_record_info.jsonl
 en_dense_lm_125m.tar.gz
 __pycache__/
 struprompting/models/__pycache__/
+base_dir/gpt_icl/en_dense_lm_1_3b.tar.gz
+struprompting/criterions/__pycache__/
+base_dir/ft_gpt/cb/en_dense_lm_1_3b/0.001/checkpoint1.pt.tmp
+run.slurm
+base_dir/gpt_icl/en_dense_lm_13b/model.pt
+*.pyc
+.gitignore
+base_dir/gpt_icl/en_dense_lm_1_3b/model.pt
