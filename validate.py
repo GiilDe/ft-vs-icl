@@ -6,7 +6,7 @@
 """
 Train a new model on one or across multiple GPUs.
 """
-from linearize import LinearizedGPT
+from linearize import LinearizedTLM
 import struprompting
 
 import argparse
@@ -95,7 +95,8 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    model = LinearizedGPT(model=model)
+    assert isinstance(model, LinearizedTLM) == cfg.model.use_linearization
+
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
     logger.info("task: {}".format(task.__class__.__name__))
@@ -535,7 +536,6 @@ def cli_main(
     cfg.model.checkpoint_activations = False
     cfg.model.offload_activations = False
     # cfg.distributed_training.distributed_world_size = 1
-    cfg.task.optim_group = "all"
 
     if args.profile:
         with torch.cuda.profiler.profile():

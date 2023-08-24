@@ -136,4 +136,5 @@ python3 validate.py "-" \
     --ana-attn $ana_attn \
     --ana-rlt-dir $ana_rlt_dir \
     --ana-setting $ana_setting \
+    --distributed-world-size $NGPU \
     --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt
