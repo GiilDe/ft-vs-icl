@@ -49,9 +49,6 @@ class LinearizedModel(nn.Module):
         self.params = params
         self.params0 = params0
         self._model_name = model.__class__.__name__
-        for i, buffer in enumerate(buffers0):
-            name = f"buffer{i}"
-            self.register_buffer(name, buffer)
 
         for param0, param1, model_named_param in zip(
             self.params0, self.params, model.named_parameters()
@@ -76,6 +73,7 @@ class LinearizedModel(nn.Module):
             assert torch.equal(buffer, buffer_original_model)  # sanity check
             self.register_buffer(buffer_original_name_processed, buffer)
 
+        self.func0 = lambda params, x: func0(params, self.buffers(), x)
         # The intial parameters are not trainable.
         for p in self.params0:
             p.requires_grad = False

@@ -544,6 +544,9 @@ def cli_main(
     else:
         distributed_utils.call_main(cfg, main)
 
+    # if cfg.common.use_plasma_view:
+    #     server.server.kill()
+
 
 if __name__ == "__main__":
     cli_main()
