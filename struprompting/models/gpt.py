@@ -37,7 +37,7 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         metadata={"help": "gpt checkpoint path"},
     )
     use_linearization: bool = field(default=True)
-    sum_extra_jvp_result: bool = field(default=False)
+    sum_extra_jvp_result: bool = field(default=True)
 
 
 @register_model("gptmodel", dataclass=GPTModelConfig)
