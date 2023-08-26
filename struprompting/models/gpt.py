@@ -37,7 +37,7 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         metadata={"help": "gpt checkpoint path"},
     )
     use_linearization: bool = field(default=True)
-    sum_extra_jvp_result: bool = field(default=True)
+    sum_extra_jvp_result: bool = field(default=False)
 
 
 @register_model("gptmodel", dataclass=GPTModelConfig)
@@ -60,6 +60,7 @@ class GPTmodel(TransformerLanguageModel):
                 and not isinstance(model, LinearizedTLM)
             ):
                 logging.info("Loading linearization")
+                logging.info(f"sum_extra_jvp_result: {args.sum_extra_jvp_result}")
                 # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
                 model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
@@ -67,7 +68,9 @@ class GPTmodel(TransformerLanguageModel):
 
             if args.use_linearization and not isinstance(model, LinearizedTLM):
                 # if we didn't linearize the model previously, do it now
+                logging.info("Loading linearization")
                 model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)
+                logging.info(f"sum_extra_jvp_result: {args.sum_extra_jvp_result}")
 
         # ! ICL analysis
         if task.cfg.ana_setting in ["zs", "ftzs", "icl"]:
