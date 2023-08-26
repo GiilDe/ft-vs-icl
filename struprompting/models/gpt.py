@@ -61,13 +61,13 @@ class GPTmodel(TransformerLanguageModel):
             ):
                 logging.info("Loading linearization")
                 # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
-                model = LinearizedTLM(model, args.sum_extra_jvp_result)
+                model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
             model.load_state_dict(state["model"], strict=True, args=args)
 
             if args.use_linearization and not isinstance(model, LinearizedTLM):
                 # if we didn't linearize the model previously, do it now
-                model = LinearizedTLM(model)
+                model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)
 
         # ! ICL analysis
         if task.cfg.ana_setting in ["zs", "ftzs", "icl"]:
