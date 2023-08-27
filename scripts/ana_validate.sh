@@ -18,7 +18,7 @@ ana_attn=${12}
 ana_rlt_dir=${13}
 ana_setting=${14}
 perm_id=${15}
-
+use_linearization=${16}
 N_CLASSES=2
 if [ "$TASK" = "agnews" ]
 then
@@ -140,4 +140,5 @@ python3 validate.py "-" \
     --ana-rlt-dir $ana_rlt_dir \
     --ana-setting $ana_setting \
     --distributed-world-size $NGPU \
+    --use-linearization $use_linearization \
     --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt

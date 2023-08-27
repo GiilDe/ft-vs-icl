@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 from fairseq.dataclass import ChoiceEnum, FairseqDataclass
 from torch import Tensor
 from linearize import LinearizedTLM
+from distutils.util import strtobool
 
 import logging
 import json
@@ -36,7 +37,7 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         default="",
         metadata={"help": "gpt checkpoint path"},
     )
-    use_linearization: bool = field(default=True)
+    use_linearization: str = field(default=1)
     sum_extra_jvp_result: bool = field(default=True)
 
 
@@ -55,7 +56,7 @@ class GPTmodel(TransformerLanguageModel):
 
         if args.gpt_model_path != "":
             if (
-                args.use_linearization
+                bool(strtobool(args.use_linearization))
                 and "gpt_icl" not in args.gpt_model_path # if we're loading the original checkpoint, don't linearize
                 and not isinstance(model, LinearizedTLM)
             ):
@@ -66,7 +67,7 @@ class GPTmodel(TransformerLanguageModel):
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
             model.load_state_dict(state["model"], strict=True, args=args)
 
-            if args.use_linearization and not isinstance(model, LinearizedTLM):
+            if bool(strtobool(args.use_linearization)) and not isinstance(model, LinearizedTLM):
                 # if we didn't linearize the model previously, do it now
                 logging.info("Loading linearization")
                 model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)

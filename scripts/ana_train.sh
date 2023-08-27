@@ -22,6 +22,7 @@ max_epoch=${16}
 save_dir=${17}
 optim_group=${18}
 perm_id=${19}
+use_linearization=${20}
 
 N_CLASSES=2
 if [ "$TASK" = "agnews" ]
@@ -152,5 +153,5 @@ python3 validate.py "-" \
     --disable-validation \
     --optim-group $optim_group \
     --distributed-world-size $NGPU \
-    --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt \
-
+    --use-linearization $use_linearization \
+    --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt

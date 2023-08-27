@@ -6,6 +6,7 @@
 """
 Train a new model on one or across multiple GPUs.
 """
+from distutils.util import strtobool
 from linearize import LinearizedTLM
 import struprompting
 
@@ -95,7 +96,7 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    assert isinstance(model, LinearizedTLM) == cfg.model.use_linearization
+    assert isinstance(model, LinearizedTLM) == bool(strtobool(cfg.model.use_linearization ))
 
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
