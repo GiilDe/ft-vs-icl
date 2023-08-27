@@ -5,4 +5,5 @@ tmp_ana_rlt/*
 en_dense_lm_125m.tar.gz
 *.pyc
 run.slurm
-awesome.out
+*.out
+*.err
