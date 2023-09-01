@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 23.1) (preloaded format=pdflatex 2023.3.19)  1 SEP 2023 11:24
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 23.1) (preloaded format=pdflatex 2023.3.19)  1 SEP 2023 11:31
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -586,25 +586,25 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (C:\Users\tomer\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-LaTeX Font Info:    Trying to load font information for U+msa on input line 43.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 42.
  (C:\Users\tomer\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 43.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 42.
  (C:\Users\tomer\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 43.
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 42.
  (C:\Users\tomer\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-LaTeX Font Info:    Trying to load font information for OMS+pcr on input line 43.
+LaTeX Font Info:    Trying to load font information for OMS+pcr on input line 42.
  (C:\Users\tomer\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\omspcr.fd
 File: omspcr.fd 
 )
 LaTeX Font Info:    Font shape `OMS/pcr/m/n' in size <9> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 43.
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 47.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 42.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 46.
  (C:\Users\tomer\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) (paper10.bbl) [1
@@ -622,7 +622,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  75i,5n,79p,323b,436s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {C:/Users/tomer/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}<C:/Users/tomer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/tomer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/tomer/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/tomer/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/tomer/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
-Output written on paper10.pdf (1 page, 59714 bytes).
+Output written on paper10.pdf (1 page, 58817 bytes).
 PDF statistics:
  50 PDF objects out of 1000 (max. 8388607)
  7 named destinations out of 1000 (max. 500000)

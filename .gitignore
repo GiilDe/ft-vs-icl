@@ -7,3 +7,6 @@ en_dense_lm_125m.tar.gz
 run.slurm
 *.out
 *.err
+written/paper10.log
+written/paper10.fdb_latexmk
+written/paper10.synctex.gz
