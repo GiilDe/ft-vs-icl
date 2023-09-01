@@ -1,0 +1,11 @@
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{lipton2018}
+Lipton, Z., Wang, Y.X., Smola, A.: Detecting and correcting for label shift
+  with black box predictors. In: International Conference on Machine Learning
+  (ICML) (2018)
+
+\end{thebibliography}
