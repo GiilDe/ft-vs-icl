@@ -6,7 +6,8 @@
 """
 Train a new model on one or across multiple GPUs.
 """
-from linearize import LinearizedGPT
+from distutils.util import strtobool
+from linearize import LinearizedTLM
 import struprompting
 
 import argparse
@@ -95,7 +96,8 @@ def main(cfg: FairseqConfig) -> None:
     else:
         model = task.build_model(cfg.model)
 
-    model = LinearizedGPT(model)
+    assert isinstance(model, LinearizedTLM) == bool(strtobool(cfg.model.use_linearization ))
+
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)
     logger.info("task: {}".format(task.__class__.__name__))
@@ -534,6 +536,7 @@ def cli_main(
     # hack to turn off checkpoints. Wasn't able to turn it off via the
     cfg.model.checkpoint_activations = False
     cfg.model.offload_activations = False
+    # cfg.distributed_training.distributed_world_size = 1
 
     if args.profile:
         with torch.cuda.profiler.profile():

@@ -16,6 +16,7 @@ ana_rlt_dir=$base_dir/ana_rlt/$model_name/$task
 icl_k=$4
 perm_id=$6
 try_lr=$9
+use_linearization=${10}
 
 rm -r tmp_ana_rlt
 mkdir -p tmp_ana_rlt
@@ -45,7 +46,8 @@ bash scripts/ana_train.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path 
     $max_epoch \
     $save_dir \
     $optim_group \
-    $perm_id
+    $perm_id \
+    $use_linearization
 
 cp tmp_ana_rlt/ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
 
@@ -63,7 +65,8 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $ana_attn \
     $ana_rlt_dir \
     $ana_setting \
-    $perm_id
+    $perm_id \
+    $use_linearization
 
 cp tmp_ana_rlt/ftzs_record_info.jsonl $ana_rlt_dir/ftzs/record_info.jsonl
 
@@ -81,7 +84,8 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $ana_attn \
     $ana_rlt_dir \
     $ana_setting \
-    $perm_id
+    $perm_id \
+    $use_linearization
 
 cp tmp_ana_rlt/zs_record_info.jsonl $ana_rlt_dir/zs/record_info.jsonl
 
@@ -99,6 +103,7 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $ana_attn \
     $ana_rlt_dir \
     $ana_setting \
-    $perm_id
+    $perm_id \
+    $use_linearization
     
 cp tmp_ana_rlt/icl_record_info.jsonl $ana_rlt_dir/icl/record_info.jsonl

@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def save_checkpoint(cfg: CheckpointConfig, trainer, epoch_itr, val_loss):
-    from fairseq import meters
+    from fairseq.logging import meters
 
     # only one worker should attempt to create the required dir
     if trainer.data_parallel_rank == 0:
