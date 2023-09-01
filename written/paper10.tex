@@ -45,10 +45,36 @@ Tel-Aviv University, Tel-Aviv, Israel \\
   surprising in-context learning (ICL)
 \keywords{NLP \and LLM \and   ICL \and Linearization }
 \end{abstract}
-\section{Introduction}
+\section{Literature Review}
+In-context learning (ICL) is a machine learning approach where a model fine-tunes its knowledge and adapts its behavior based on specific contextual information or examples, allowing it to perform better on tasks related to that context.
+It enables models to leverage domain-specific or task-specific knowledge without extensive retraining, making them more versatile and adaptable.
+In their work, \cite{NEURIPS2020_1457c0d6} explores the remarkable ability of language models, particularly GPT-3, to learn and perform tasks with minimal examples, demonstrating their potential as versatile few-shot learners.
+The authors showcase the models' impressive performance across a wide range of tasks and emphasize their capacity to generalize from limited data, highlighting the transformative impact of these models on various natural language processing applications.
 
-In recent years, large pretrained language models,
-especially in Transformer-based architectures \cite{lipton2018}
+In recent research, there has been a growing interest in understanding the relationship between two key concepts: in-context learning (ICL) and gradient descent (GD)-based fine-tuning, particularly in the context of transformer models (\cite{pmlr-v202-von-oswald23a,2022arXiv221210559D}).
+This research seeks to uncover how ICL, which involves adapting and learning in specific contexts, can be effectively integrated with the iterative optimization process of GD, especially when fine-tuning transformer models.
+However, the majority of the examination was on models that had relaxed constraints and featured linear attention mechanisms:
+\begin{equation}
+  LinearAttn(K,V,q)=KV^q
+\end{equation}
+
+The paper \cite{pmlr-v202-von-oswald23a}, develops an explicit weight values for a linear self-attention layer, achieving an update equivalent to a single iteration of gradient descent (GD) aimed at minimizing mean squared error. Moreover, the authors demonstrate how multiple self-attention layers can progressively execute curvature adjustments, leading to enhancements over standard gradient descent.
+They proposed the following:
+
+Given a 1-head linear attention layer and
+the tokens $e_{j} = (x_{j},y_{j})$, for $j = 1, . . . , N$, one can construct key, query and value matrices $W_{K}$, $W_{Q}$, $W_{V}$ as well
+as the projection matrix P such that a Transformer step on 
+every token $e_j$ is identical to the gradient-induced dynamics $e_j \rightarrow (x_j , y_j ) + (0, - \delta W x_j ) = (x_j , y_j ) + PVK^{T}q_j$
+such that $e_j = (x_j , y_j - \delta y_j )$. For the test data token
+$(x_{N+1}, y_{N+1})$ the dynamics are identical.
+
+By doing so, they demonstrate the capability of linear attention to execute gradient descent on the deep representations constructed by the transformer.
+
+Another paper (\cite{2022arXiv221210559D}) expand the findings from linear attention to conventional attention mechanisms, substantiating their claims with empirical data. 
+Their experiments convincingly reveal that a model fine-tuned through gradient steps and a model prompted with in-context examples appear to perform analogous functions, exhibiting similar behaviors on inputs. 
+Additionally, they observe significant similarities in the internal behaviors of these two models.
+
+
  \bibliographystyle{splncs04}
  \bibliography{refs}
 

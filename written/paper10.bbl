@@ -3,9 +3,31 @@
 \providecommand{\urlprefix}{URL }
 \providecommand{\doi}[1]{https://doi.org/#1}
 
-\bibitem{lipton2018}
-Lipton, Z., Wang, Y.X., Smola, A.: Detecting and correcting for label shift
-  with black box predictors. In: International Conference on Machine Learning
-  (ICML) (2018)
+\bibitem{NEURIPS2020_1457c0d6}
+Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.D., Dhariwal, P.,
+  Neelakantan, A., Shyam, P., Sastry, G., Askell, A., Agarwal, S.,
+  Herbert-Voss, A., Krueger, G., Henighan, T., Child, R., Ramesh, A., Ziegler,
+  D., Wu, J., Winter, C., Hesse, C., Chen, M., Sigler, E., Litwin, M., Gray,
+  S., Chess, B., Clark, J., Berner, C., McCandlish, S., Radford, A., Sutskever,
+  I., Amodei, D.: Language models are few-shot learners. In: Larochelle, H.,
+  Ranzato, M., Hadsell, R., Balcan, M., Lin, H. (eds.) Advances in Neural
+  Information Processing Systems. vol.~33, pp. 1877--1901. Curran Associates,
+  Inc. (2020),
+  \url{https://proceedings.neurips.cc/paper_files/paper/2020/file/1457c0d6bfcb4967418bfb8ac142f64a-Paper.pdf}
+
+\bibitem{2022arXiv221210559D}
+{Dai}, D., {Sun}, Y., {Dong}, L., {Hao}, Y., {Ma}, S., {Sui}, Z., {Wei}, F.:
+  {Why Can GPT Learn In-Context? Language Models Implicitly Perform Gradient
+  Descent as Meta-Optimizers}. arXiv e-prints arXiv:2212.10559 (Dec 2022).
+  \doi{10.48550/arXiv.2212.10559}
+
+\bibitem{pmlr-v202-von-oswald23a}
+Von~Oswald, J., Niklasson, E., Randazzo, E., Sacramento, J., Mordvintsev, A.,
+  Zhmoginov, A., Vladymyrov, M.: Transformers learn in-context by gradient
+  descent. In: Krause, A., Brunskill, E., Cho, K., Engelhardt, B., Sabato, S.,
+  Scarlett, J. (eds.) Proceedings of the 40th International Conference on
+  Machine Learning. Proceedings of Machine Learning Research, vol.~202, pp.
+  35151--35174. PMLR (23--29 Jul 2023),
+  \url{https://proceedings.mlr.press/v202/von-oswald23a.html}
 
 \end{thebibliography}
