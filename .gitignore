@@ -4,6 +4,10 @@ output_dir/*
 tmp_ana_rlt/*
 en_dense_lm_125m.tar.gz
 *.pyc
-run.slurm
 *.out
 *.err
+test.py
+agnews_1_3b_linear.txt
+agnews_1_3b_non_linear.txt
+cb_1_3b_linear.txt
+cb_1_3b_non_linear.txt

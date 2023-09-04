@@ -37,7 +37,7 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         default="",
         metadata={"help": "gpt checkpoint path"},
     )
-    use_linearization: str = field(default=1)
+    use_linearization: str = field(default=0)
     sum_extra_jvp_result: bool = field(default=True)
 
 
@@ -152,6 +152,8 @@ class GPTDecoder(TransformerDecoder):
 
         if not features_only:
             x = self.output_layer(features=x)
+            for i in range(len(extra["inner_outputs"])):
+                extra["inner_outputs"][i] = self.output_layer(features=extra["inner_outputs"][i])
         return x, extra
 
     def extract_features_scriptable(
@@ -228,6 +230,7 @@ class GPTDecoder(TransformerDecoder):
         # decoder layers
         attn: Optional[Tensor] = None
         inner_states: List[Optional[Tensor]] = [x]
+        inner_outputs: List[Optional[Tensor]] = []
         self_attn_out_hiddens: List[Optional[Tensor]] = []
 
         for idx, layer in enumerate(self.layers):
@@ -241,7 +244,7 @@ class GPTDecoder(TransformerDecoder):
 
             layer_attn = None
             x, qkv_val_sub, _, self_attn_out_hidden = layer(
-                x,
+                x.detach(),
                 enc,
                 padding_mask,
                 incremental_state,
@@ -257,8 +260,26 @@ class GPTDecoder(TransformerDecoder):
             self_attn_out_hiddens.append(self_attn_out_hidden)
 
             inner_states.append(x)
+
+            x_res = x
+            if self.layer_norm is not None:
+                x_res = self.layer_norm(x_res)
+                if self.alpha is not None:
+                    x_res = torch.mul(self.alpha, x_res)
+
+            # T x B x C -> B x T x C
+            x_res = x_res.transpose(0, 1)
+
+            if self.project_out_dim is not None:
+                x_res = self.project_out_dim(x_res)
+
+            inner_outputs.append(x_res)
+
             if layer_attn is not None and idx == alignment_layer:
                 attn = layer_attn.float().to(x)
+
+            if idx == len(self.layers) - 1:
+                x = x_res
 
         if attn is not None:
             if alignment_heads is not None:
@@ -267,18 +288,7 @@ class GPTDecoder(TransformerDecoder):
             # average probabilities over heads
             attn = attn.mean(dim=0)
 
-        if self.layer_norm is not None:
-            x = self.layer_norm(x)
-            if self.alpha is not None:
-                x = torch.mul(self.alpha, x)
-
-        # T x B x C -> B x T x C
-        x = x.transpose(0, 1)
-
-        if self.project_out_dim is not None:
-            x = self.project_out_dim(x)
-
-        extra = {"attn": [attn], "inner_states": inner_states, "qkv_val": qkv_val, "self_attn_out_hiddens": self_attn_out_hiddens}
+        extra = {"attn": [attn], "inner_states": inner_states, "qkv_val": qkv_val, "self_attn_out_hiddens": self_attn_out_hiddens, "inner_outputs": inner_outputs}
         if attn is None:
             del extra["attn"]
         return x, extra

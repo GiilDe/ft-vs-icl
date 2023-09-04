@@ -71,14 +71,23 @@ class FewshotFTCriterion(FairseqCriterion):
         net_output, extra = model(
             sample["net_input"]["src_tokens"]
         )
-        net_output = net_output[:, :-1, :]
-        net_output = (net_output, extra)
+        # net_output = net_output[:, :-1, :]
+        # net_output = (net_output, extra)
         targets = sample["net_input"]["src_tokens"][:, 1:].unsqueeze(-1)
 
-        lprobs = model.get_normalized_probs(net_output, log_probs=True)
-        loss = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
-        loss = -loss.sum()
+        # lprobs = model.get_normalized_probs(net_output, log_probs=True)
+        # loss = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
+        # loss = -loss.sum()
+        loss = torch.tensor(0.0).cuda()
+        for i in range(len(extra["inner_outputs"])):
+            net_output_i = extra["inner_outputs"][i]
+            net_output_i = net_output_i[:, :-1, :]
+            net_output_i = (net_output_i, extra)
+            lprobs = model.get_normalized_probs(net_output_i, log_probs=True)
+            loss_i = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
+            loss += -loss_i.sum()
 
+        loss = loss / len(extra["inner_outputs"])
         optim_size = loss_mask.int().sum()
 
         logging_output = {}

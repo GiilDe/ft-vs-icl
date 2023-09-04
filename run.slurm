@@ -24,14 +24,14 @@
 #bash run.sh en_dense_lm_125m gptmodel_small agnews 32 3 0 output_dir base_dir 0.2
 #python3 icl_ft/compute_sim.py subj all 1_3b > agnews_125m.txt
 
-bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 1
+bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0
 python3 icl_ft/compute_sim.py agnews all 1_3b > agnews_1_3b_linear.txt
 
-bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0
-python3 icl_ft/compute_sim.py agnews all 1_3b > agnews_1_3b_non_linear.txt
+#bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0
+#python3 icl_ft/compute_sim.py agnews all 1_3b > agnews_1_3b_non_linear.txt
 
-bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 1
-python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_linear.txt
+#bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 1
+#python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_linear.txt
 
-bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 0
-python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_non_linear.txt
+#bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 0
+#python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_non_linear.txt
