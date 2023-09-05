@@ -87,7 +87,6 @@ class FewshotFTCriterion(FairseqCriterion):
             loss_i = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
             loss += -loss_i.sum()
 
-        loss = loss / len(extra["inner_outputs"])
         optim_size = loss_mask.int().sum()
 
         logging_output = {}
