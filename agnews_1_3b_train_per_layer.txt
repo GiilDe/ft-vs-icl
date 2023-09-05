@@ -1,0 +1,43 @@
+base_dir/ana_rlt/en_dense_lm_1_3b/agnews/ftzs 2000
+loading ftzs data costs 162.634263753891 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/agnews/zs 2000
+loading zs data costs 124.67479658126831 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/agnews/icl 2000
+loading icl data costs 160.7455825805664 seconds
+================= number of both F2T examples: 324
+================= number of ICL F2T examples: 782
+================= number of FTZS F2T examples: 338
+++++++++++++++++ ICL recall to FT: 95.86
+count_f2t costs 0.0075836181640625 seconds
+============================== analyzing self_attn_out_hiddens ==============================
+per-layer updates sim (icl-zs)&(ftzs-zs):
+ [0.6696 0.0153 0.3431 0.1185 0.3692 0.1124 0.4795 0.1992 0.3062 0.2826
+ 0.3626 0.3012 0.4458 0.4086 0.41   0.3943 0.4317 0.3191 0.266  0.3785
+ 0.267  0.1465 0.1329 0.5522]
+overall updates sim (icl-zs)&(ftzs-zs):
+ 0.3213
+
+per-layer updates sim (icl-zs)&(random):
+ [-0.004   0.0048  0.0197  0.0199  0.0152  0.0063  0.0068 -0.0005  0.0003
+ -0.0035  0.0064  0.0027  0.0005  0.0017 -0.0033 -0.0024 -0.0015 -0.005
+ -0.0042 -0.0042 -0.0003  0.0059 -0.0062 -0.0061]
+overall updates sim (icl-zs)&(random):
+ 0.002
+
+analyze_sim costs 31.2803795337677 seconds
+============================== analyzing attn_map, softmax=False ==============================
+per-layer direct sim (icl)&(zs):
+ [-0.2952  0.2459  0.0676 -0.3539  0.0443  0.2207  0.4865  0.2424  0.2267
+  0.0824  0.1025 -0.1692 -0.1948 -0.1886 -0.3541  0.1725 -0.2648 -0.2498
+  0.0297  0.559   0.8035  0.8299  0.9049  0.6947]
+overall direct sim (icl)&(zs):
+ 0.1518
+
+per-layer direct sim (icl)&(ftzs):
+ [-0.2852 -0.0639  0.0168 -0.4529 -0.0176  0.0075  0.105  -0.0498  0.0039
+ -0.1294 -0.0651 -0.1971 -0.3438 -0.0218 -0.1815  0.351   0.3156  0.3021
+  0.2884  0.5304  0.4251  0.8003  0.9207  0.6223]
+overall direct sim (icl)&(ftzs):
+ 0.1201
+
+analyze_attn_map (w/o softmax) costs 422.6060526371002 seconds
