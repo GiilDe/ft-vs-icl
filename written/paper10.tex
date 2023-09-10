@@ -20,8 +20,8 @@
 \usepackage{wrapfig}
 
 \usepackage{xcolor}
- \renewcommand\UrlFont{\color{blue}\rmfamily}
-
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+\newcommand\sizeof[1]{\left|#1\right|}
 
 
 \begin{document}
@@ -100,6 +100,9 @@ Here, $E$ denotes historical output error signal values, $X'$ corresponds to his
 Their experiments convincingly reveal that a model fine-tuned through gradient steps and a model prompted with in-context examples appear to perform analogous functions, exhibiting similar behaviors on inputs. 
 Additionally, they observe significant similarities in the internal behaviors of these two models.
 
+
+\section{Method}
+\input{method.tex}
 
  \bibliographystyle{splncs04}
  \bibliography{refs}

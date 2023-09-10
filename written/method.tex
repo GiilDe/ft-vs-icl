@@ -1,0 +1,16 @@
+In the following sections we describe the evaluation metrics used to compare the behavior of ICL and finetuning.
+\textbf{TODO}: Adress that we use Dai's metrics.
+
+\subsection*{Prediction Recall}
+
+From the perspective of model prediction, models with similar behavior should have aligned predictions.
+We measure the recall of correct ICL predictions to correct finetuning predictions as suggested by \cite{dai2023gpt}.
+Given a set of test examples, we count the subsets of examples correctly predicted by each model: $C_{\text{ZSL}}, C_{\text{ICL}}, C_{\text{FT}}$.
+To compare the update each method induces to the model's prediction we subtract correct predictions made in the ZSL setting.
+Finally we compute the \textbf{Rec2FTP} score as: $\frac{ \sizeof{ \left( C_{\text{ICL}} \cap C_{\text{FT}} \right) \setminus C_{\text{ZSL}} } }{ \sizeof{ C_{\text{FT}} \setminus C_{\text{ZSL}} } }$ .
+A higher Rec2FTP score suggests that ICL covers more correct behavior of finetuning from the perspective of the model prediction.
+
+%This measure is agnostic to the inner workings of the attention mechanism.
+
+\subsection*{Attention Output Direction}
+Considering the hidden state representation space of an attention layer of a model, we compare the updates to the attention output representation (\textbf{SimAOU})\cite{dai2023gpt}.
