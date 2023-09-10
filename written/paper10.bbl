@@ -3,6 +3,11 @@
 \providecommand{\urlprefix}{URL }
 \providecommand{\doi}[1]{https://doi.org/#1}
 
+\bibitem{Aizerman2019TheoreticalFO}
+Aizerman, M.A., Braverman, E.M., Rozonoer, L.I.: Theoretical foundation of
+  potential functions method in pattern recognition (2019),
+  \url{https://api.semanticscholar.org/CorpusID:92987925}
+
 \bibitem{NEURIPS2020_1457c0d6}
 Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.D., Dhariwal, P.,
   Neelakantan, A., Shyam, P., Sastry, G., Askell, A., Agarwal, S.,
@@ -20,6 +25,11 @@ Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.D., Dhariwal, P.,
   {Why Can GPT Learn In-Context? Language Models Implicitly Perform Gradient
   Descent as Meta-Optimizers}. arXiv e-prints arXiv:2212.10559 (Dec 2022).
   \doi{10.48550/arXiv.2212.10559}
+
+\bibitem{unknown}
+Irie, K., Csordás, R., Schmidhuber, J.: The dual form of neural networks
+  revisited: Connecting test time predictions to training patterns via
+  spotlights of attention (02 2022)
 
 \bibitem{pmlr-v202-von-oswald23a}
 Von~Oswald, J., Niklasson, E., Randazzo, E., Sacramento, J., Mordvintsev, A.,

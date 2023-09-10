@@ -5,44 +5,48 @@ Reallocating 'name_of_file' (item size: 1) to 9 items.
 The style file: splncs04.bst
 Reallocating 'name_of_file' (item size: 1) to 5 items.
 Database file #1: refs.bib
-You've used 3 entries,
+Warning--entry type for "unknown" isn't style-file defined
+--line 53 of file refs.bib
+Warning--empty booktitle in Aizerman2019TheoreticalFO
+You've used 5 entries,
             2850 wiz_defined-function locations,
-            625 strings with 6254 characters,
-and the built_in function-call counts, 3904 in all, are:
-= -- 272
-> -- 266
+            635 strings with 6681 characters,
+and the built_in function-call counts, 4774 in all, are:
+= -- 333
+> -- 300
 < -- 4
-+ -- 104
-- -- 101
-* -- 319
-:= -- 526
++ -- 119
+- -- 113
+* -- 375
+:= -- 640
 add.period$ -- 8
-call.type$ -- 3
-change.case$ -- 58
+call.type$ -- 5
+change.case$ -- 70
 chr.to.int$ -- 0
-cite$ -- 3
-duplicate$ -- 291
-empty$ -- 246
-format.name$ -- 106
-if$ -- 786
+cite$ -- 6
+duplicate$ -- 369
+empty$ -- 333
+format.name$ -- 120
+if$ -- 969
 int.to.chr$ -- 0
-int.to.str$ -- 3
-missing$ -- 83
-newline$ -- 15
-num.names$ -- 10
-pop$ -- 150
+int.to.str$ -- 5
+missing$ -- 99
+newline$ -- 21
+num.names$ -- 14
+pop$ -- 193
 preamble$ -- 1
-purify$ -- 51
+purify$ -- 61
 quote$ -- 0
-skip$ -- 57
+skip$ -- 77
 stack$ -- 0
-substring$ -- 159
-swap$ -- 202
+substring$ -- 192
+swap$ -- 235
 text.length$ -- 4
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 12
-warning$ -- 0
-while$ -- 17
-width$ -- 4
-write$ -- 43
+type$ -- 20
+warning$ -- 1
+while$ -- 23
+width$ -- 6
+write$ -- 58
+(There were 2 warnings)
