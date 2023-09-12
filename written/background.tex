@@ -1,0 +1,66 @@
+\subsection{Dual Form Between Attention and Linear Layers Optimized by Gradient Descent}
+
+The view of language models as meta-optimizers originates from the presentation of the dual and primal forms of the perceptron \cite{Aizerman2019TheoreticalFO}.
+This notion was later expressed in terms key/value/query-attention operation by by \cite{irie22dual,dai2023gpt,pmlr-v202-von-oswald23a} which apply it apply it in the modern context of deep neural networks.
+They show that linear layers optimized by gradient descent have a dual representation as linear attention.
+
+Let $W \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ be the weight matrix of a linear layer initialized at $W_0$, and let $\mathbf{x}, \mathbf{x}_1, \dots, \mathbf{x}_n  \in \mathbb{R}^{d_{\text{in}}}$ be the input and training examples representation respectively.
+One step of gradient descent on the loss function $\mathcal{L}$ with learning rate $\eta$ yields the weight update $\Delta W$.
+This update can be written as the outer products of the training examples $\mathbf{x}_1, \dots, \mathbf{x}_n$ and the gradients of their corresponding outputs $\mathbf{e}_i = -\eta \nabla_{W_0 x_i}\mathcal{L}$
+\begin{equation}
+    \Delta W = \sum_i \mathbf{e}_i \otimes \mathbf{x}^{\prime T}_i.
+    \label{equ:dual_comp_2}
+\end{equation}
+
+Thus the computation of the optimized linear layer can be formulated as 
+
+\begin{equation}
+    \begin{aligned}
+        \mathcal{F}(\mathbf{x}) = & \left( W_{0} + \Delta W \right) \mathbf{x} \\
+        = & W_{0} \mathbf{x} + \Delta W \mathbf{x} \\
+        = & W_{0} \mathbf{x} + \sum_i \left( \mathbf{e}_i \otimes \mathbf{x}_i\right) \mathbf{x} \\
+        = & W_{0} \mathbf{x} + \sum_i \mathbf{e}_i \left( \mathbf{x}^{T}_i \mathbf{x} \right) \\
+        = & W_{0} \mathbf{x} + \operatorname{LinearAttn} \left( E, X, \mathbf{x} \right), 
+    \end{aligned}
+    \label{equ:sgd_attn_dual}
+\end{equation}
+where $\operatorname{LinearAttn}(V, K, \mathbf{q})$ denotes the linear attention operation.
+From the perspective of attention we regard training examples $X$ as keys, their corresponding gradients as values, and the current input $\mathbf{x}$ as the query.
+
+
+\subsection{Understanding Transformer Attention as Meta-Optimization}
+\label{sec:icl_dual}
+In this section we explain the simplified mathematical view of in-context learning as a process of meta-optimization presented in \cite{dai2023gpt}.
+For the purpose of analysis, it is useful to view the change to the output induced by attention to the demonstration tokens as equivalent parameter update $\Delta W_{\text{ICL}}$ that take effect on the original attention parameters.
+
+Let $\mathbf{x} \in \mathbb{R}^{d}$ be the input representation of a query token $t$, and $\mathbf{q} = W_{Q} \mathbf{x} \in \mathbb{R}^{d^{\prime}}$ be the attention query vector. 
+We use the relaxed linear attention model, whereby the softmax operation and the scaling factor are omitted:
+\begin{equation}
+    \begin{aligned}
+    \mathcal{F}_{\text{ICL}}(\mathbf{q}) & = \operatorname{LinearAttn}(V, K, \mathbf{q}) \\
+    & = W_{V} [X^{\prime}; X] \left( W_{K} [X^{\prime}; X] \right)^T \mathbf{q} \\
+    \end{aligned}
+    \label{equ:icl_attn}
+\end{equation}
+where $W_{Q}, W_{K}, W_{V} \in \mathbb{R}^{d^{\prime} \times d}$ are the projection matrices for computing the attention queries, keys, and values, respectively; 
+$X$ denotes the input representations of query tokens before $t$; 
+$X^{\prime}$ denotes the input representations of the demonstration tokens; 
+and $[X^{\prime}; X]$ denotes the matrix concatenation. 
+
+
+They think of $W_{\text{ZSL}} = W_{V} X \left( W_{K} X \right)^T$ as the initial parameters of a linear layer that is updated by attention to in-context demonstrations.
+To see this, note that $W_{\text{ZSL}}$ is the attention result in the zero-shot learning setting where no demonstrations are given (Equation \ref{equ:icl_attn}). 
+Following the reverse direction of Equation (\ref{equ:sgd_attn_dual}), you arrive at the dual form of the Transformer attention: 
+\begin{equation}
+    \begin{aligned}
+        \mathcal{F}_{\text{ICL}}(\mathbf{q})
+        = & W_{\text{ZSL}} \mathbf{q} + \operatorname{LinearAttn} \left( W_{V} X^{\prime}, W_{K} X^{\prime}, \mathbf{q} \right) \\
+        = & W_{\text{ZSL}} \mathbf{q} + \sum_i W_{V} \textbf{x}^{\prime}_i \left( \left( W_{K} \textbf{x}^{\prime}_i \right)^T \mathbf{q} \right) \\
+        = & W_{\text{ZSL}} \mathbf{q} + \sum_i \left( W_{V} \textbf{x}^{\prime}_i \otimes \left( W_{K} \textbf{x}^{\prime}_i \right) \right) \mathbf{q} \\
+        = & W_{\text{ZSL}} \mathbf{q} + \Delta W_{\text{ICL}} \mathbf{q} \\
+        = & \left( W_{\text{ZSL}} + \Delta W_{\text{ICL}} \right) \mathbf{q}. 
+    \end{aligned}
+    \label{equ:icl_opti_dual}
+\end{equation}
+
+By analogy with Equation(\ref{equ:sgd_attn_dual}), we can regard $W_{K} \textbf{x}^{\prime}_i$ as the training examples and $W_{V} X^{\prime}$ as their corresponding meta-gradients. 
