@@ -20,11 +20,10 @@ Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.D., Dhariwal, P.,
   Inc. (2020),
   \url{https://proceedings.neurips.cc/paper_files/paper/2020/file/1457c0d6bfcb4967418bfb8ac142f64a-Paper.pdf}
 
-\bibitem{2022arXiv221210559D}
-{Dai}, D., {Sun}, Y., {Dong}, L., {Hao}, Y., {Ma}, S., {Sui}, Z., {Wei}, F.:
-  {Why Can GPT Learn In-Context? Language Models Implicitly Perform Gradient
-  Descent as Meta-Optimizers}. arXiv e-prints arXiv:2212.10559 (Dec 2022).
-  \doi{10.48550/arXiv.2212.10559}
+\bibitem{dai2023gpt}
+Dai, D., Sun, Y., Dong, L., Hao, Y., Ma, S., Sui, Z., Wei, F.: Why can gpt
+  learn in-context? language models implicitly perform gradient descent as
+  meta-optimizers (2023)
 
 \bibitem{unknown}
 Irie, K., Csordás, R., Schmidhuber, J.: The dual form of neural networks
