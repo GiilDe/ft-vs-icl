@@ -944,8 +944,34 @@ class Trainer(object):
                 # way that avoids CPU/device transfers in case sample_size is a GPU or
                 # TPU object. The assumption is that the gradient itself is also 0.
 
+            def compute_grad_norm(params):
+                def grad_exists(p):
+                    return p is not None and getattr(p, "grad", None) is not None
+                grads = [
+                    p.grad.detach() for p in params if grad_exists(p) and not hasattr(p, "expert")
+                ]
+                total_norm = torch.norm(
+                    torch.stack(
+                        [torch.norm(g, p=2) for g in grads]
+                    )
+                )
+                return total_norm
+
+            if not hasattr(self, "grad_norms"):
+                self.grad_norms = [[] for _ in range(len(self.model.decoder.layers))]
+            
             with torch.autograd.profiler.record_function("clip-grads"):
                 # clip grads
+                for i, layer in enumerate(self.model.decoder.layers):
+                    # log the gradient norms of the decoder layers
+                    grad_norm_ = compute_grad_norm(layer.parameters())
+
+                    # self.grad_norms[i].append(grad_norm)
+
+                    # mean = [torch.mean(torch.stack(self.grad_norms[i])) for i in range(len(self.grad_norms))]
+                    logger.info(
+                        f"decoder layer {i} grad norm = {grad_norm_}"
+                    )
                 grad_norm = self.clip_grad_norm(self.cfg.optimization.clip_norm)
 
             # check that grad norms are consistent across workers

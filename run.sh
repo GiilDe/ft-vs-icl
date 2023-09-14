@@ -49,61 +49,61 @@ bash scripts/ana_train.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path 
     $perm_id \
     $use_linearization
 
-cp tmp_ana_rlt/ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
+# cp tmp_ana_rlt/ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
 
-# ==================== analyzing FT setting ============
+# # ==================== analyzing FT setting ============
 
-k=0
-ana_attn=1
-ana_setting=ftzs
-model_path=$base_dir/ft_gpt/$task/$model_name/$lr/checkpoint_last.pt
-rm $ana_rlt_dir/ftzs/record_info.jsonl
+# k=0
+# ana_attn=1
+# ana_setting=ftzs
+# model_path=$base_dir/ft_gpt/$task/$model_name/$lr/checkpoint_last.pt
+# rm $ana_rlt_dir/ftzs/record_info.jsonl
 
-mkdir -p $ana_rlt_dir/$ana_setting
+# mkdir -p $ana_rlt_dir/$ana_setting
 
-bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path $encoder_path $dict_path $output_path \
-    $ana_attn \
-    $ana_rlt_dir \
-    $ana_setting \
-    $perm_id \
-    $use_linearization
+# bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path $encoder_path $dict_path $output_path \
+#     $ana_attn \
+#     $ana_rlt_dir \
+#     $ana_setting \
+#     $perm_id \
+#     $use_linearization
 
-cp tmp_ana_rlt/ftzs_record_info.jsonl $ana_rlt_dir/ftzs/record_info.jsonl
+# cp tmp_ana_rlt/ftzs_record_info.jsonl $ana_rlt_dir/ftzs/record_info.jsonl
 
-# ==================== analyzing ZS setting ============
+# # ==================== analyzing ZS setting ============
 
-k=0
-ana_attn=1
-ana_setting=zs
-model_path=$base_dir/gpt_icl/$model_name/model.pt
-rm $ana_rlt_dir/zs/record_info.jsonl
+# k=0
+# ana_attn=1
+# ana_setting=zs
+# model_path=$base_dir/gpt_icl/$model_name/model.pt
+# rm $ana_rlt_dir/zs/record_info.jsonl
 
-mkdir -p $ana_rlt_dir/$ana_setting
+# mkdir -p $ana_rlt_dir/$ana_setting
 
-bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path $encoder_path $dict_path $output_path \
-    $ana_attn \
-    $ana_rlt_dir \
-    $ana_setting \
-    $perm_id \
-    $use_linearization
+# bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path $encoder_path $dict_path $output_path \
+#     $ana_attn \
+#     $ana_rlt_dir \
+#     $ana_setting \
+#     $perm_id \
+#     $use_linearization
 
-cp tmp_ana_rlt/zs_record_info.jsonl $ana_rlt_dir/zs/record_info.jsonl
+# cp tmp_ana_rlt/zs_record_info.jsonl $ana_rlt_dir/zs/record_info.jsonl
 
-# ==================== analyzing ICL setting ============
+# # ==================== analyzing ICL setting ============
 
-k=$icl_k
-ana_attn=1
-ana_setting=icl
-model_path=$base_dir/gpt_icl/$model_name/model.pt
-rm $ana_rlt_dir/icl/record_info.jsonl
+# k=$icl_k
+# ana_attn=1
+# ana_setting=icl
+# model_path=$base_dir/gpt_icl/$model_name/model.pt
+# rm $ana_rlt_dir/icl/record_info.jsonl
 
-mkdir -p $ana_rlt_dir/$ana_setting
+# mkdir -p $ana_rlt_dir/$ana_setting
 
-bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path $encoder_path $dict_path $output_path \
-    $ana_attn \
-    $ana_rlt_dir \
-    $ana_setting \
-    $perm_id \
-    $use_linearization
+# bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path $encoder_path $dict_path $output_path \
+#     $ana_attn \
+#     $ana_rlt_dir \
+#     $ana_setting \
+#     $perm_id \
+#     $use_linearization
     
-cp tmp_ana_rlt/icl_record_info.jsonl $ana_rlt_dir/icl/record_info.jsonl
+# cp tmp_ana_rlt/icl_record_info.jsonl $ana_rlt_dir/icl/record_info.jsonl
