@@ -1,0 +1,6 @@
+base_dir/ana_rlt/en_dense_lm_1_3b/cb/ftzs 56
+loading ftzs data costs 5.8529884815216064 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/cb/zs 56
+loading zs data costs 4.5215983390808105 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/cb/icl 6
+loading icl data costs 0.5343892574310303 seconds

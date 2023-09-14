@@ -15,23 +15,25 @@
 
 #---------${model_name} ${model_arch} ${task} ${k} ${seed} ${perm_id} ${output_path} ${base_dir} ${lr} ${use_linearization}
 # bash run.sh en_dense_lm_125m gptmodel_small cb 4 3 0 output_dir base_dir 0.001
-
-
-# bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003
-
 # bash run.sh en_dense_lm_125m gptmodel_small subj 32 4 0 output_dir base_dir 0.003
 
 #bash run.sh en_dense_lm_125m gptmodel_small agnews 32 3 0 output_dir base_dir 0.2
 #python3 icl_ft/compute_sim.py subj all 1_3b > agnews_125m.txt
 
-bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 1
-python3 icl_ft/compute_sim.py agnews all 1_3b > agnews_1_3b_linear.txt
+bash run.sh en_dense_lm_1_3b gptmodel_large sst2 32 2 0 output_dir base_dir 0.0005 0
+python3 icl_ft/compute_sim.py sst2 all 1_3b > sst2_1_3b_fp32.txt
+
+bash run.sh en_dense_lm_1_3b gptmodel_large sst5 32 5 0 output_dir base_dir 0.00016 0
+python3 icl_ft/compute_sim.py sst5 all 1_3b > sst5_1_3b_fp32.txt
+
+bash run.sh en_dense_lm_1_3b gptmodel_large mr 32 5 0 output_dir base_dir 0.003 0
+python3 icl_ft/compute_sim.py mr all 1_3b > mr_1_3b_fp32.txt
+
+bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0
+python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_fp32.txt
 
 bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0
-python3 icl_ft/compute_sim.py agnews all 1_3b > agnews_1_3b_non_linear.txt
-
-bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 1
-python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_linear.txt
+python3 icl_ft/compute_sim.py agnews all 1_3b > agnews_1_3b_fp32.txt
 
 bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 0
-python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_non_linear.txt
+python3 icl_ft/compute_sim.py cb all 1_3b > cb_1_3b_fp32.txt

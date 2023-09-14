@@ -1,0 +1,6 @@
+base_dir/ana_rlt/en_dense_lm_1_3b/agnews/ftzs 2000
+loading ftzs data costs 207.47530317306519 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/agnews/zs 2000
+loading zs data costs 150.89622688293457 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/agnews/icl 14
+loading icl data costs 1.1896417140960693 seconds
