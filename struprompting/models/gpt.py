@@ -278,8 +278,7 @@ class GPTDecoder(TransformerDecoder):
             if layer_attn is not None and idx == alignment_layer:
                 attn = layer_attn.float().to(x)
 
-            if idx == len(self.layers) - 1:
-                x = x_res
+        x = x_res
 
         if attn is not None:
             if alignment_heads is not None:

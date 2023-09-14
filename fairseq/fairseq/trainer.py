@@ -944,9 +944,27 @@ class Trainer(object):
                 # way that avoids CPU/device transfers in case sample_size is a GPU or
                 # TPU object. The assumption is that the gradient itself is also 0.
 
+            layer_to_loss_size = {
+                0: 0.5,
+                1: 0.5,
+                2: 0.5,
+                3: 0.5,
+                4: 0.5,
+                5: 0.5,
+                6: 0.5,
+                7: 1,
+                8: 1,
+                9: 1,
+                10: 1,
+                11: 1,
+                12: 1,
+            }
             with torch.autograd.profiler.record_function("clip-grads"):
                 # clip grads
-                grad_norm = self.clip_grad_norm(self.cfg.optimization.clip_norm)
+                grad_norm = self.clip_grad_norm(0)
+                for layer in self.model.decoder.layers:
+                    total_norm = utils.clip_grad_norm_(layer.parameters(), self.cfg.optimization.clip_norm)
+                    logger.info(f"layer {layer} total_norm {total_norm}")
 
             # check that grad norms are consistent across workers
             # on tpu check tensor is slow
