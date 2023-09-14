@@ -20,8 +20,8 @@
 \usepackage{wrapfig}
 
 \usepackage{xcolor}
- \renewcommand\UrlFont{\color{blue}\rmfamily}
-
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+\newcommand\sizeof[1]{\left|#1\right|}
 
 
 \begin{document}
@@ -70,10 +70,42 @@ $(x_{N+1}, y_{N+1})$ the dynamics are identical.
 
 By doing so, they demonstrate the capability of linear attention to execute gradient descent on the deep representations constructed by the transformer.
 
-Another paper (\cite{2022arXiv221210559D}) expand the findings from linear attention to conventional attention mechanisms, substantiating their claims with empirical data. 
+
+Another paper (\cite{2022arXiv221210559D}) expand the findings from linear attention to conventional attention mechanisms, substantiating their claims with empirical data.
+Inspired by \cite{Aizerman2019TheoreticalFO} and \cite{unknown}, the idea in this is paper to explain language models as meta-optimizers.
+
+Consider $W_0$ and $\Delta W$, both belonging to $\mathbb{R}^{d_{out} \times d_{in}}$, where $W_0$ represents the initial parameter matrix, and $\Delta W$ signifies the updating matrix. Additionally, let $x$ be a member of $\mathbb{R}^{d_{in}}$, serving as the input representation. A linear layer, subject to optimization via gradient descent, can be articulated as follows:
+\begin{equation}
+  \mathcal{F}(x) = (W_0 + \Delta W)x \label{eq:2}
+\end{equation}
+In the context of the back-propagation algorithm, the determination of $\Delta W$ entails the aggregation of outer products derived from historical input representations $x'_i \in \mathbb{R}^{d_{in}}$ and their corresponding error signals $e_i \in \mathbb{R}^{d_{out}}$:
+\begin{equation}
+  \Delta W = \sum_{i} e_i \otimes x'_i \label{eq:3}
+\end{equation}
+Notably, $e_i$ is the result of scaling historical output gradients by $-\gamma$, the negative learning rate.
+
+By equations \eqref{eq:2} and \eqref{eq:3}, we can derive the dual manifestation of linear layers, optimized through gradient descent, as follows:
+\begin{align}
+  \begin{split}
+    \mathcal{F}(x) &= (W_0 + \Delta W)x \\
+    &= W_0x + \Delta Wx \\
+    &= W_0x + \sum_{i} (e_i \otimes x'_i)x \\
+    &= W_0x + \sum_{i} e_i(x^{'T}_ix) \\
+    &= W_0x + \text{LinearAttn}(E, X', x)
+  \end{split}
+  \label{eq:4}
+\end{align}
+Here, $E$ denotes historical output error signal values, $X'$ corresponds to historical inputs employed as keys, and $x$ serves as the current input, operating as the query.
+
 Their experiments convincingly reveal that a model fine-tuned through gradient steps and a model prompted with in-context examples appear to perform analogous functions, exhibiting similar behaviors on inputs. 
 Additionally, they observe significant similarities in the internal behaviors of these two models.
 
+
+\section{Background and Preliminaries}
+\input{background.tex}
+
+\section{Method}
+\input{method.tex}
 
  \bibliographystyle{splncs04}
  \bibliography{refs}

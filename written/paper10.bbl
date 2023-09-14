@@ -3,6 +3,11 @@
 \providecommand{\urlprefix}{URL }
 \providecommand{\doi}[1]{https://doi.org/#1}
 
+\bibitem{Aizerman2019TheoreticalFO}
+Aizerman, M.A., Braverman, E.M., Rozonoer, L.I.: Theoretical foundation of
+  potential functions method in pattern recognition (2019),
+  \url{https://api.semanticscholar.org/CorpusID:92987925}
+
 \bibitem{NEURIPS2020_1457c0d6}
 Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.D., Dhariwal, P.,
   Neelakantan, A., Shyam, P., Sastry, G., Askell, A., Agarwal, S.,
@@ -15,11 +20,15 @@ Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.D., Dhariwal, P.,
   Inc. (2020),
   \url{https://proceedings.neurips.cc/paper_files/paper/2020/file/1457c0d6bfcb4967418bfb8ac142f64a-Paper.pdf}
 
-\bibitem{2022arXiv221210559D}
-{Dai}, D., {Sun}, Y., {Dong}, L., {Hao}, Y., {Ma}, S., {Sui}, Z., {Wei}, F.:
-  {Why Can GPT Learn In-Context? Language Models Implicitly Perform Gradient
-  Descent as Meta-Optimizers}. arXiv e-prints arXiv:2212.10559 (Dec 2022).
-  \doi{10.48550/arXiv.2212.10559}
+\bibitem{dai2023gpt}
+Dai, D., Sun, Y., Dong, L., Hao, Y., Ma, S., Sui, Z., Wei, F.: Why can gpt
+  learn in-context? language models implicitly perform gradient descent as
+  meta-optimizers (2023)
+
+\bibitem{unknown}
+Irie, K., Csordás, R., Schmidhuber, J.: The dual form of neural networks
+  revisited: Connecting test time predictions to training patterns via
+  spotlights of attention (02 2022)
 
 \bibitem{pmlr-v202-von-oswald23a}
 Von~Oswald, J., Niklasson, E., Randazzo, E., Sacramento, J., Mordvintsev, A.,
