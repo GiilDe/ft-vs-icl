@@ -14,7 +14,7 @@
 
 
 #--------------------model_name model_arch task k seed perm_id output_path base_dir lr use_linearization clip_norm 
-# bash run.sh en_dense_lm_125m gptmodel_small cb 4 3 0 output_dir base_dir 0.001 0
+#bash run.sh en_dense_lm_125m gptmodel_small cb 4 3 0 output_dir base_dir 0.001 0 0.1
 # bash run.sh en_dense_lm_125m gptmodel_small subj 32 4 0 output_dir base_dir 0.003 0
 
 #bash run.sh en_dense_lm_125m gptmodel_small agnews 32 3 0 output_dir base_dir 0.2
@@ -39,7 +39,7 @@
 #python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_12.txt
 
 bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 1.0
-python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_per_layer_1.txt
+python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_per_layer_1_fp32.txt
 
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 0.0
 
