@@ -553,4 +553,7 @@ def cli_main(
 
 
 if __name__ == "__main__":
+    # run on cpu
+    torch.backends.cudnn.enabled = False
+    torch.cuda.is_available = lambda : False
     cli_main()

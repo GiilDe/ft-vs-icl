@@ -9,7 +9,7 @@
 #SBATCH --ntasks=1 # number of processes
 #SBATCH --mem=50000 # CPU memory (MB)
 #SBATCH --cpus-per-task=4 # CPU cores per process
-#SBATCH --gpus=1 # GPUs in total
+#SBATCH --gpus=0 # GPUs in total
 #SBATCH --account=gpu-research
 
 
@@ -20,14 +20,14 @@
 #bash run.sh en_dense_lm_125m gptmodel_small agnews 32 3 0 output_dir base_dir 0.2
 #python3 icl_ft/compute_sim.py subj all 1_3b > agnews_125m.txt
 
-#bash run.sh en_dense_lm_1_3b gptmodel_large sst2 32 2 0 output_dir base_dir 0.0005 0
-#python3 icl_ft/compute_sim.py sst2 all 1_3b > sst2_1_3b_train_per_layer_clip_norm.txt
+#bash run.sh en_dense_lm_1_3b gptmodel_large sst2 32 2 0 output_dir base_dir 0.0005 0 1
+#python3 icl_ft/compute_sim.py sst2 all 1_3b > sst2_1_3b_train_per_layer_clip_norm_different_layers_clipping.txt
 
-#bash run.sh en_dense_lm_1_3b gptmodel_large sst5 32 5 0 output_dir base_dir 0.00016 0
-#python3 icl_ft/compute_sim.py sst5 all 1_3b > sst5_1_3b_train_per_layer_clip_norm.txt
+#bash run.sh en_dense_lm_1_3b gptmodel_large sst5 32 5 0 output_dir base_dir 0.00016 0 1
+#python3 icl_ft/compute_sim.py sst5 all 1_3b > sst5_1_3b_train_per_layer_clip_norm_different_layers_clipping.txt
 
-#bash run.sh en_dense_lm_1_3b gptmodel_large mr 32 5 0 output_dir base_dir 0.003 0
-#python3 icl_ft/compute_sim.py mr all 1_3b > mr_1_3b_train_per_layer_clip_norm.txt
+#bash run.sh en_dense_lm_1_3b gptmodel_large mr 32 5 0 output_dir base_dir 0.003 0 1
+#python3 icl_ft/compute_sim.py mr all 1_3b > mr_1_3b_train_per_layer_clip_norm_different_layers_clipping.txt
 
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 7.0
 #python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_7.txt
@@ -39,7 +39,7 @@
 #python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_12.txt
 
 bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 1.0
-python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_per_layer_1_fp32.txt
+python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_different_layers_clipping.txt
 
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 0.0
 
