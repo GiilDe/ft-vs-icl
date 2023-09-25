@@ -67,22 +67,6 @@ class FewshotFTCriterion(FairseqCriterion):
         3) logging outputs to display while training
         """
         # dict that maps each layer to the desired size of its gradient
-        layer_to_loss_size = {
-            0: 1,
-            1: 1,
-            2: 1,
-            3: 1,
-            4: 1,
-            5: 1,
-            6: 1,
-            7: 1,
-            8: 1,
-            9: 1,
-            10: 1,
-            11: 1,
-            12: 1,
-        }
-
         loss_mask = sample["net_input"]["gpt_loss_mask"][:, 1:]
         sample_size = sample["net_input"]["src_tokens"].size(0)
         net_output, extra = model(
@@ -103,10 +87,6 @@ class FewshotFTCriterion(FairseqCriterion):
             lprobs = model.get_normalized_probs(net_output_i, log_probs=True)
             loss_i = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
             loss_i = -loss_i.sum()
-            # grad_size = torch.linalg.vector_norm(torch.autograd.grad(loss_i, model.decoder.layers[i], retain_graph=True))
-            # assert grad_size.shape == torch.Size([1])
-            # loss_i = loss_i*(layer_to_loss_size[i]/grad_size)
-            # assert torch.linalg.vector_norm(loss_i) == layer_to_loss_size[i]
             loss += loss_i
 
         optim_size = loss_mask.int().sum()

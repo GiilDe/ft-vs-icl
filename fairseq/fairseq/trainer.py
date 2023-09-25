@@ -971,7 +971,7 @@ class Trainer(object):
                 23: 1467.907958984375,
             }
 
-
+            normalize = 70.0
 
             def compute_grad_norm(params):
                 def grad_exists(p):
@@ -997,7 +997,7 @@ class Trainer(object):
                     )
                 grad_norm = self.clip_grad_norm(0)
                 for i, layer in enumerate(self.model.decoder.layers):
-                    total_norm = utils.clip_grad_norm_(layer.parameters(), layer_to_grad_size[i])
+                    total_norm = utils.clip_grad_norm_(layer.parameters(), layer_to_grad_size[i]/normalize)
                     logger.info(f"layer {i} total_norm {total_norm}")
 
             # check that grad norms are consistent across workers
