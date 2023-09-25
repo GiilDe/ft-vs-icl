@@ -154,5 +154,5 @@ python3 validate.py "-" \
     --optim-group $optim_group \
     --distributed-world-size $NGPU \
     --use-linearization $use_linearization \
-    --per_layer $per_layer \
+    --per-layer $per_layer \
     --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt
