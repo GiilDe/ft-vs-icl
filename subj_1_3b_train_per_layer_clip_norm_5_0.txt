@@ -1,0 +1,44 @@
+base_dir/ana_rlt/en_dense_lm_1_3b/subj/ftzs 2000
+loading ftzs data costs 127.62235260009766 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/subj/zs 2000
+loading zs data costs 75.33152031898499 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/subj/icl 2000
+loading icl data costs 94.69957041740417 seconds
+================= number of both F2T examples: 67
+================= number of ICL F2T examples: 438
+================= number of FTZS F2T examples: 73
+++++++++++++++++ ICL recall to FT: 91.78
+count_f2t costs 0.0036940574645996094 seconds
+============================== analyzing self_attn_out_hiddens ==============================
+per-layer updates sim (icl-zs)&(ftzs-zs):
+ [ 4.418e-01 -3.598e-01  1.762e-01  3.000e-04  3.755e-01  2.127e-01
+  2.276e-01  2.153e-01  9.800e-02  2.124e-01  1.779e-01  1.396e-01
+  1.735e-01  1.248e-01  1.529e-01  1.699e-01  8.940e-02  2.625e-01
+  2.784e-01  2.554e-01  2.111e-01  4.090e-01  1.198e-01  7.560e-02]
+overall updates sim (icl-zs)&(ftzs-zs):
+ 0.1767
+
+per-layer updates sim (icl-zs)&(random):
+ [-0.0016 -0.0001  0.0213  0.0199  0.0079  0.0045  0.0089 -0.0056  0.0026
+ -0.0024 -0.01    0.0041  0.001   0.0005  0.0024 -0.0017 -0.0042 -0.0016
+  0.0027 -0.0095 -0.0008  0.0081  0.0062 -0.0008]
+overall updates sim (icl-zs)&(random):
+ 0.0022
+
+analyze_sim costs 22.14654302597046 seconds
+============================== analyzing attn_map, softmax=False ==============================
+per-layer direct sim (icl)&(zs):
+ [-0.0702  0.418   0.1401  0.0201  0.4842  0.5555  0.6671  0.4695  0.586
+  0.3342  0.4049  0.2979  0.1344 -0.0851 -0.1824  0.3435  0.1257  0.0047
+  0.3536  0.7016  0.8723  0.8725  0.9017  0.7367]
+overall direct sim (icl)&(zs):
+ 0.3786
+
+per-layer direct sim (icl)&(ftzs):
+ [-0.0702  0.4649  0.1993  0.0906  0.5029  0.5511  0.6545  0.5085  0.6106
+  0.4106  0.4475  0.3704  0.1794 -0.0423 -0.1765  0.3625  0.1793  0.042
+  0.3517  0.697   0.8707  0.874   0.8983  0.7239]
+overall direct sim (icl)&(ftzs):
+ 0.4042
+
+analyze_attn_map (w/o softmax) costs 206.21003770828247 seconds

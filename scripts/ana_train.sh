@@ -23,6 +23,8 @@ save_dir=${17}
 optim_group=${18}
 perm_id=${19}
 use_linearization=${20}
+clip_norm=${21}
+per_layer=${22}
 
 N_CLASSES=2
 if [ "$TASK" = "agnews" ]
@@ -126,14 +128,12 @@ python3 validate.py "-" \
     --warmup-updates 0 \
     --optimizer sgd \
     --lr $lr \
+    --clip-norm $clip_norm \
     --max-epoch $max_epoch \
     --curriculum 1000000 \
     --max-update 1000000 \
-    --fp16 \
     --eval-data $TASK \
-    --fp16-init-scale 4 \
     --checkpoint-activations \
-    --fp16-scale-window 256 \
     --seed $SEED \
     --reset-dataloader \
     --k $K \
@@ -154,4 +154,5 @@ python3 validate.py "-" \
     --optim-group $optim_group \
     --distributed-world-size $NGPU \
     --use-linearization $use_linearization \
+    --per_layer $per_layer \
     --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt

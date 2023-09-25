@@ -535,10 +535,10 @@ def cli_main(
             f"Started plasma server pid {server.server.pid} {cfg.common.plasma_path}"
         )
 
-    # hack to turn off checkpoints. Wasn't able to turn it off via the
-    cfg.model.checkpoint_activations = False
-    cfg.model.offload_activations = False
-    # cfg.distributed_training.distributed_world_size = 1
+    # hack to turn off checkpoints.
+    if cfg.model.use_linearization:
+        cfg.model.checkpoint_activations = False
+        cfg.model.offload_activations = False
 
     if args.profile:
         with torch.cuda.profiler.profile():
@@ -552,4 +552,7 @@ def cli_main(
 
 
 if __name__ == "__main__":
+    # run on cpu
+    #torch.backends.cudnn.enabled = False
+    #torch.cuda.is_available = lambda : False
     cli_main()
