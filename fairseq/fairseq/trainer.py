@@ -944,34 +944,34 @@ class Trainer(object):
                 # way that avoids CPU/device transfers in case sample_size is a GPU or
                 # TPU object. The assumption is that the gradient itself is also 0.
 
-            layer_to_grad_size = {
-                0: 906.2417602539062,
-                1: 889.72802734375,
-                2: 897.0025024414062,
-                3: 835.9248657226562,
-                4: 753.10498046875,
-                5: 725.373291015625,
-                6: 839.4935302734375,
-                7: 884.9718017578125,
-                8: 938.0673828125,
-                9: 857.8636474609375,
-                10: 847.2251586914062,
-                11: 863.1707153320312,
-                12: 874.0849609375,
-                13: 838.22900390625,
-                14: 853.3182983398438,
-                15: 790.1822509765625,
-                16: 762.1227416992188,
-                17: 718.4639282226562,
-                18: 667.9415283203125,
-                19: 668.5381469726562,
-                20: 733.0692138671875,
-                21: 723.5579223632812,
-                22: 942.050048828125,
-                23: 1467.907958984375,
-            }
+            # layer_to_grad_size = {
+            #     0: 906.2417602539062,
+            #     1: 889.72802734375,
+            #     2: 897.0025024414062,
+            #     3: 835.9248657226562,
+            #     4: 753.10498046875,
+            #     5: 725.373291015625,
+            #     6: 839.4935302734375,
+            #     7: 884.9718017578125,
+            #     8: 938.0673828125,
+            #     9: 857.8636474609375,
+            #     10: 847.2251586914062,
+            #     11: 863.1707153320312,
+            #     12: 874.0849609375,
+            #     13: 838.22900390625,
+            #     14: 853.3182983398438,
+            #     15: 790.1822509765625,
+            #     16: 762.1227416992188,
+            #     17: 718.4639282226562,
+            #     18: 667.9415283203125,
+            #     19: 668.5381469726562,
+            #     20: 733.0692138671875,
+            #     21: 723.5579223632812,
+            #     22: 942.050048828125,
+            #     23: 1467.907958984375,
+            # }
 
-            normalize = 70.0
+            # normalize = 70.0
 
             def compute_grad_norm(params):
                 def grad_exists(p):
@@ -995,10 +995,11 @@ class Trainer(object):
                     logger.info(
                         f"decoder layer {i} grad norm = {grad_norm_}"
                     )
-                grad_norm = self.clip_grad_norm(0)
-                for i, layer in enumerate(self.model.decoder.layers):
-                    total_norm = utils.clip_grad_norm_(layer.parameters(), layer_to_grad_size[i]/normalize)
-                    logger.info(f"layer {i} total_norm {total_norm}")
+                grad_norm = self.clip_grad_norm(self.cfg.optimization.clip_norm)
+                # per-layer grad norm clipping
+                # for i, layer in enumerate(self.model.decoder.layers):
+                #     total_norm = utils.clip_grad_norm_(layer.parameters(), layer_to_grad_size[i]/normalize)
+                #     logger.info(f"layer {i} total_norm {total_norm}")
 
             # check that grad norms are consistent across workers
             # on tpu check tensor is slow

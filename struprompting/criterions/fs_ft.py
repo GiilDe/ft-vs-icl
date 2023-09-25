@@ -3,6 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+from distutils.util import strtobool
 import math
 from dataclasses import dataclass, field
 from omegaconf import II
@@ -35,6 +36,9 @@ class FewshotFTConfig(FairseqDataclass):
             "help": "beam size"
         },
     )
+    per_layer: str = field(
+        default=0,
+    )
 
 
 @register_criterion("fs_ft", dataclass=FewshotFTConfig)
@@ -46,6 +50,7 @@ class FewshotFTCriterion(FairseqCriterion):
         # acc debug
         self.valid_num_sum = 0
         self.acc_record = 0
+        self.per_layer = bool(strtobool(cfg.per_layer))
 
     def decode(self, tokens: torch.LongTensor):
         assert tokens.dim() == 1
@@ -72,22 +77,25 @@ class FewshotFTCriterion(FairseqCriterion):
         net_output, extra = model(
             sample["net_input"]["src_tokens"]
         )
-        # net_output = net_output[:, :-1, :]
-        # net_output = (net_output, extra)
         targets = sample["net_input"]["src_tokens"][:, 1:].unsqueeze(-1)
 
-        # lprobs = model.get_normalized_probs(net_output, log_probs=True)
-        # loss = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
-        # loss = -loss.sum()
-        loss = torch.tensor(0.0).cuda()
-        for i in range(len(extra["inner_outputs"])):
-            net_output_i = extra["inner_outputs"][i]
-            net_output_i = net_output_i[:, :-1, :]
-            net_output_i = (net_output_i, extra)
-            lprobs = model.get_normalized_probs(net_output_i, log_probs=True)
-            loss_i = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
-            loss_i = -loss_i.sum()
-            loss += loss_i
+        if not self.per_layer:
+            net_output = net_output[:, :-1, :]
+            net_output = (net_output, extra)
+            lprobs = model.get_normalized_probs(net_output, log_probs=True)
+            loss = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
+            loss = -loss.sum()
+        
+        else:
+            loss = torch.tensor(0.0).cuda()
+            for i in range(len(extra["inner_outputs"])):
+                net_output_i = extra["inner_outputs"][i]
+                net_output_i = net_output_i[:, :-1, :]
+                net_output_i = (net_output_i, extra)
+                lprobs = model.get_normalized_probs(net_output_i, log_probs=True)
+                loss_i = torch.gather(lprobs, -1, targets).squeeze(-1) * (loss_mask != False).int()
+                loss_i = -loss_i.sum()
+                loss += loss_i
 
         optim_size = loss_mask.int().sum()
 

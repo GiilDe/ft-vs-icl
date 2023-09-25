@@ -18,7 +18,7 @@ perm_id=$6
 try_lr=$9
 use_linearization=${10}
 clip_norm=${11}
-
+per_layer=${12}
 
 rm -r tmp_ana_rlt
 mkdir -p tmp_ana_rlt
@@ -50,7 +50,8 @@ bash scripts/ana_train.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path 
     $optim_group \
     $perm_id \
     $use_linearization \
-    $clip_norm
+    $clip_norm \
+    $per_layer
 
 cp tmp_ana_rlt/ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
 

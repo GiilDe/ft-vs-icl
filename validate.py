@@ -539,7 +539,6 @@ def cli_main(
     if cfg.model.use_linearization:
         cfg.model.checkpoint_activations = False
         cfg.model.offload_activations = False
-    # cfg.distributed_training.distributed_world_size = 1
 
     if args.profile:
         with torch.cuda.profiler.profile():
@@ -554,6 +553,6 @@ def cli_main(
 
 if __name__ == "__main__":
     # run on cpu
-    torch.backends.cudnn.enabled = False
-    torch.cuda.is_available = lambda : False
+    #torch.backends.cudnn.enabled = False
+    #torch.cuda.is_available = lambda : False
     cli_main()
