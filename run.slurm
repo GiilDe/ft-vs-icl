@@ -20,16 +20,21 @@
 #bash run.sh en_dense_lm_125m gptmodel_small agnews 32 3 0 output_dir base_dir 0.2
 #python3 icl_ft/compute_sim.py subj all 1_3b > agnews_125m.txt
 
-name="sst2_1_3b_train_per_layer_clip_norm_12"
-bash run.sh en_dense_lm_1_3b gptmodel_large sst2 32 2 0 output_dir base_dir 0.0005 0 12.0 1 > "${name}.out" 2> "${name}.err"
+clip_norm=0.0
+name="subj_1_3b_train_per_layer_clip_norm_0"
+bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
+python3 icl_ft/compute_sim.py subj all 1_3b > "${name}.txt"
+
+name="sst2_1_3b_train_per_layer_clip_norm_0"
+bash run.sh en_dense_lm_1_3b gptmodel_large sst2 32 2 0 output_dir base_dir 0.0005 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
 python3 icl_ft/compute_sim.py sst2 all 1_3b > "${name}.txt"
 
-name="sst5_1_3b_train_per_layer_clip_norm_12"
-bash run.sh en_dense_lm_1_3b gptmodel_large sst5 32 5 0 output_dir base_dir 0.00016 0 12.0 1 > "${name}.out" 2> "${name}.err" 
+name="sst5_1_3b_train_per_layer_clip_norm_0"
+bash run.sh en_dense_lm_1_3b gptmodel_large sst5 32 5 0 output_dir base_dir 0.00016 0 $clip_norm 1 > "${name}.out" 2> "${name}.err" 
 python3 icl_ft/compute_sim.py sst5 all 1_3b > "${name}.txt"
 
-name="mr_1_3b_train_per_layer_clip_norm_12"
-bash run.sh en_dense_lm_1_3b gptmodel_large mr 32 5 0 output_dir base_dir 0.003 0 12.0 1 > "${name}.out" 2> "${name}.err"
+name="mr_1_3b_train_per_layer_clip_norm_0"
+bash run.sh en_dense_lm_1_3b gptmodel_large mr 32 5 0 output_dir base_dir 0.003 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
 python3 icl_ft/compute_sim.py mr all 1_3b > "${name}.txt"
 
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 7.0 1 > "${name}.out" 2> "${name}.err"
@@ -38,20 +43,16 @@ python3 icl_ft/compute_sim.py mr all 1_3b > "${name}.txt"
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 9.0 1 > "${name}.out" 2> "${name}.err"
 #python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_9.txt
 
-name="subj_1_3b_train_per_layer_clip_norm_12"
-bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 12.0 1 > "${name}.out" 2> "${name}.err"
-python3 icl_ft/compute_sim.py subj all 1_3b > "${name}.txt"
-
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 1.0 1 > "${name}.out" 2> "${name}.err"
 #python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_different_layers_clipping.txt
 
 #bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 0.0
 
-name="agnews_1_3b_train_per_layer_clip_norm_12"
-bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0 12.0 1 > "${name}.out" 2> "${name}.err"
+name="agnews_1_3b_train_per_layer_clip_norm_0"
+bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
 python3 icl_ft/compute_sim.py agnews all 1_3b > "${name}.txt"
 
-name="cb_1_3b_train_per_layer_clip_norm_12"
-bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 0 12.0 1 > "${name}.out" 2> "${name}.err"
+name="cb_1_3b_train_per_layer_clip_norm_0"
+bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
 python3 icl_ft/compute_sim.py cb all 1_3b > "${name}.txt"
 
