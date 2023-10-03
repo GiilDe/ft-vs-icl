@@ -59,6 +59,8 @@ def np_softmax(x, axis=-1):
 def check_answer(info_item):
     return info_item['gold_label'] == info_item['pred_label']
 
+def is_same_pred(zsl_item, update_item):
+    return zsl_item['pred_label'] == update_item['pred_label']
 
 def norm_hidden(hidden):
     norm = np.linalg.norm(hidden, axis=-1) + 1e-20  # length
@@ -84,6 +86,11 @@ def count_f2t():
     num_both_f2t = 0
     num_icl_f2t = 0
     num_ftzs_f2t = 0
+
+    num_changed_f2t = 0
+    num_changed_icl = 0
+    num_same_change = 0
+
     n_examples = len(zs_info)
     for i in range(n_examples):
         if not check_answer(zs_info[i]) and check_answer(icl_info[i]):
@@ -93,13 +100,31 @@ def count_f2t():
         if not check_answer(zs_info[i]) and check_answer(ftzs_info[i]) and check_answer(icl_info[i]):
             num_both_f2t += 1
 
+        if not is_same_pred(zs_info[i], ftzs_info[i]):
+            num_changed_f2t += 1
+            if is_same_pred(ftzs_info[i], icl_info[i]):
+                num_same_change += 1
+        
+        if not is_same_pred(zs_info[i], icl_info[i]):
+            num_changed_icl += 1    
+
+
+
     print('================= number of both F2T examples:', num_both_f2t)
     print('================= number of ICL F2T examples:', num_icl_f2t)
     print('================= number of FTZS F2T examples:', num_ftzs_f2t)
 
+    print('----------------- number of same changes:', num_same_change)
+    print('----------------- number of ICL changed examples:', num_changed_icl)
+    print('----------------- number of FTZS changed examples:', num_changed_f2t)
+
     recall = num_both_f2t / num_ftzs_f2t * 100
     print('++++++++++++++++ ICL recall to FT:', f"{recall:.2f}")
     save_rlts['Recall2FTP'] = recall
+
+    jaccard_percent = num_same_change / (num_changed_icl + num_changed_f2t - num_same_change) * 100
+    print('++++++++++++++++ Jaccard Index Percent:', f"{jaccard_percent:.2f}")
+    save_rlts['JaccardIndexPercent'] = jaccard_percent
 
 
 def analyze_sim(mode, key, normalize=False):
