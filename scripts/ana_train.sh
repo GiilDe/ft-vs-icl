@@ -132,8 +132,11 @@ python3 validate.py "-" \
     --max-epoch $max_epoch \
     --curriculum 1000000 \
     --max-update 1000000 \
+    --fp16 \
     --eval-data $TASK \
+    --fp16-init-scale 4 \
     --checkpoint-activations \
+    --fp16-scale-window 256 \
     --seed $SEED \
     --reset-dataloader \
     --k $K \
