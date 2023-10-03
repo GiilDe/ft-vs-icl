@@ -13,7 +13,7 @@ model = sys.argv[3]
 model = f"en_dense_lm_{model}"
 
 # !!! replace by your $base_dir/ana_rlt here
-base_dir = "base_dir/ana_rlt"
+base_dir = "base/ana_rlt"
 ana_rlt_dir = f"{base_dir}/{model}"
 
 save_rlts = {}
@@ -122,9 +122,9 @@ def count_f2t():
     print('++++++++++++++++ ICL recall to FT:', f"{recall:.2f}")
     save_rlts['Recall2FTP'] = recall
 
-    jaccard_percent = num_same_change / (num_changed_icl + num_changed_f2t - num_same_change) * 100
-    print('++++++++++++++++ Jaccard Index Percent:', f"{jaccard_percent:.2f}")
-    save_rlts['JaccardIndexPercent'] = jaccard_percent
+    changed_pred_recall = num_same_change / (num_changed_icl + num_changed_f2t - num_same_change) * 100
+    print('++++++++++++++++ same change recall to all changed:', f"{changed_pred_recall:.2f}")
+    save_rlts['ChangeRecall'] = changed_pred_recall
 
 
 def analyze_sim(mode, key, normalize=False):
@@ -242,6 +242,64 @@ def analyze_attn_map(mode, key, softmax=False, sim_func=cal_cos_sim):
     print()
 
 
+def analyze_attn_map_revised(mode, key, softmax=True, sim_func=cal_cos_sim):
+    if mode == 'all':
+        # ====================  check all attn_map ======================
+        zs_attn_map = [info_item[key] for info_item in zs_info]  # n_examples, n_layers, n_heads, len
+        icl_attn_map = [info_item[key] for info_item in icl_info]  # n_examples, n_layers, n_heads, len
+        ftzs_attn_map = [info_item[key] for info_item in ftzs_info]  # n_examples, n_layers, n_heads, len
+    elif  mode == 'f2t':
+        # ====================  check False->True attn_map ======================
+        zs_attn_map = []
+        icl_attn_map = []
+        ftzs_attn_map = []
+        n_examples = len(zs_info)
+        for i in range(n_examples):
+            if not check_answer(zs_info[i]) and check_answer(ftzs_info[i]) and check_answer(icl_info[i]):
+                zs_attn_map.append(zs_info[i][key])
+                icl_attn_map.append(icl_info[i][key])
+                ftzs_attn_map.append(ftzs_info[i][key])
+    zs_attn_map = copy.deepcopy(zs_attn_map)  # n_examples, n_layers, n_heads, len
+    icl_attn_map = copy.deepcopy(icl_attn_map)  # n_examples, n_layers, n_heads, len
+    ftzs_attn_map = copy.deepcopy(ftzs_attn_map)  # n_examples, n_layers, n_heads, len
+
+    max_zs_len = -1
+    n_examples = len(zs_attn_map)
+    n_layers = len(zs_attn_map[0])
+    n_heads = len(zs_attn_map[0][0])
+    for i in range(n_examples):
+        if len(zs_attn_map[i][0][0]) > max_zs_len:
+            max_zs_len = len(zs_attn_map[i][0][0])
+    pad_value = -1e20 if softmax else 0
+    for i in range(n_examples):
+        for j in range(n_layers):
+            for k in range(n_heads):
+                pad_len = max_zs_len - len(zs_attn_map[i][j][k])
+                zs_attn_map[i][j][k] = [pad_value] * pad_len + zs_attn_map[i][j][k]
+                icl_attn_map[i][j][k] = [pad_value] * pad_len + icl_attn_map[i][j][k]
+                ftzs_attn_map[i][j][k] = [pad_value] * pad_len + ftzs_attn_map[i][j][k]
+
+    zs_attn_map = np.array(zs_attn_map)  # n_examples, n_layers, n_heads, len
+    icl_attn_map = np.array(icl_attn_map)  # n_examples, n_layers, n_heads, len
+    ftzs_attn_map = np.array(ftzs_attn_map)  # n_examples, n_layers, n_heads, len
+    if softmax:
+        zs_attn_map = np_softmax(zs_attn_map, axis=-1)
+        icl_attn_map = np_softmax(icl_attn_map, axis=-1)
+        ftzs_attn_map = np_softmax(ftzs_attn_map, axis=-1)
+
+    print('======' * 5, f'analyzing {key}, softmax={softmax}', '======' * 5)
+
+    icl_attn_map_update = icl_attn_map - zs_attn_map
+    ft_attn_map_update = ftzs_attn_map - zs_attn_map
+    sim = sim_func(icl_attn_map_update, ft_attn_map_update)
+    sim = sim.mean(axis=2)
+    sim = sim.mean(axis=0)
+    save_rlts['ICL-FTZS SimAM'] = sim.tolist()
+    print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
+    sim = sim.mean()
+    print("overall direct sim (icl)&(zs):\n", np.around(sim, 4))
+    print()
+
 stt_time = time.time()
 
 count_f2t()
@@ -252,7 +310,7 @@ analyze_sim(mode, 'self_attn_out_hiddens', normalize=True)
 print(f'analyze_sim costs {time.time() - stt_time} seconds')
 stt_time = time.time()
 
-analyze_attn_map(mode, 'attn_map', softmax=False, sim_func=cal_cos_sim)
+analyze_attn_map_revised(mode, 'attn_map', softmax=False, sim_func=cal_cos_sim)
 print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
 stt_time = time.time()
 
