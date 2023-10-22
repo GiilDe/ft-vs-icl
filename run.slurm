@@ -1,58 +1,38 @@
 #! /bin/sh
 
 #SBATCH --job-name=ft-vs-icl # job name
-#SBATCH --output=/vol/joberant_nobck/data/NLP_368307701_2223/giladd/ft-vs-icl/awesome.out # redirect stdout
-#SBATCH --error=/vol/joberant_nobck/data/NLP_368307701_2223/giladd/ft-vs-icl/awesome.err # redirect stderr
-#SBATCH --partition=gpu-joberant # (see resources section)
-#SBATCH --signal=USR1@120 # how to end job when time’s up
+#SBATCH --output=/a/home/cc/students/cs/dar/netapp/work/temp/ft-vs-icl/awesome.out # output file
+#SBATCH --error=/a/home/cc/students/cs/dar/netapp/work/temp/ft-vs-icl/awesome.err # error file
+#SBATCH --partition=killable
 #SBATCH --nodes=1 # number of machines
 #SBATCH --ntasks=1 # number of processes
-#SBATCH --mem=50000 # CPU memory (MB)
-#SBATCH --cpus-per-task=4 # CPU cores per process
 #SBATCH --gpus=1 # GPUs in total
-#SBATCH --account=gpu-research
+# SBATCH --signal=USR1@120 # how to end job when time’s up
+# SBATCH --mem=50000 # CPU memory (MB)
+# SBATCH --cpus-per-task=4 # CPU cores per process
 
+echo HELLO $SLURM_JOBID
+
+MODEL_SHORT="1_3b"
+MODEL_ARCH="gptmodel_large"
+MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
 
 #--------------------model_name model_arch task k seed perm_id output_path base_dir lr use_linearization clip_norm per_layer
-#bash run.sh en_dense_lm_125m gptmodel_small cb 4 3 0 output_dir base_dir 0.001 0 0.1
-# bash run.sh en_dense_lm_125m gptmodel_small subj 32 4 0 output_dir base_dir 0.003 0
 
-#bash run.sh en_dense_lm_125m gptmodel_small agnews 32 3 0 output_dir base_dir 0.2
-#python3 icl_ft/compute_sim.py subj all 1_3b > agnews_125m.txt
 
-clip_norm=0.0
-name="subj_1_3b_train_per_layer_clip_norm_0"
-bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
-python3 icl_ft/compute_sim.py subj all 1_3b > "${name}.txt"
-
-name="sst2_1_3b_train_per_layer_clip_norm_0"
-bash run.sh en_dense_lm_1_3b gptmodel_large sst2 32 2 0 output_dir base_dir 0.0005 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
-python3 icl_ft/compute_sim.py sst2 all 1_3b > "${name}.txt"
-
-name="sst5_1_3b_train_per_layer_clip_norm_0"
-bash run.sh en_dense_lm_1_3b gptmodel_large sst5 32 5 0 output_dir base_dir 0.00016 0 $clip_norm 1 > "${name}.out" 2> "${name}.err" 
-python3 icl_ft/compute_sim.py sst5 all 1_3b > "${name}.txt"
-
-name="mr_1_3b_train_per_layer_clip_norm_0"
-bash run.sh en_dense_lm_1_3b gptmodel_large mr 32 5 0 output_dir base_dir 0.003 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
-python3 icl_ft/compute_sim.py mr all 1_3b > "${name}.txt"
-
-#bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 7.0 1 > "${name}.out" 2> "${name}.err"
-#python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_7.txt
-
-#bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 9.0 1 > "${name}.out" 2> "${name}.err"
-#python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_9.txt
-
-#bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 1.0 1 > "${name}.out" 2> "${name}.err"
-#python3 icl_ft/compute_sim.py subj all 1_3b > subj_1_3b_train_per_layer_clip_norm_different_layers_clipping.txt
-
-#bash run.sh en_dense_lm_1_3b gptmodel_large subj 32 4 0 output_dir base_dir 0.003 0 0.0
-
-name="agnews_1_3b_train_per_layer_clip_norm_0"
-bash run.sh en_dense_lm_1_3b gptmodel_large agnews 32 3 0 output_dir base_dir 0.2 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
-python3 icl_ft/compute_sim.py agnews all 1_3b > "${name}.txt"
-
-name="cb_1_3b_train_per_layer_clip_norm_0"
-bash run.sh en_dense_lm_1_3b gptmodel_large cb 32 3 0 output_dir base_dir 0.08 0 $clip_norm 1 > "${name}.out" 2> "${name}.err"
-python3 icl_ft/compute_sim.py cb all 1_3b > "${name}.txt"
-
+while IFS=' ' read -r task num_demonstrations seed perm_id learning_rate clip_norm per_layer; do
+  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_learning_rate_${learning_rate}_clip_norm_${clip_norm}"
+  echo $name
+  echo run.sh
+  bash run.sh $MODEL_NAME $MODEL_ARCH $task $num_demonstrations \
+  $seed $perm_id output_dir base_dir $learning_rate 0 $clip_norm $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
+  echo run compute_sim.py
+  python3 icl_ft/compute_sim.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"
+  
+  ana_rlt_dir=base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
+  output_path=output_dir/${SLURM_JOBID}
+  save_dir=base_dir/ft_gpt/$task/$MODEL_NAME/${lr}_${SLURM_JOBID}
+  rm -r $save_dir
+  rm -r $output_path
+  rm -r $ana_rlt_dir
+done < cmdline_args.txt

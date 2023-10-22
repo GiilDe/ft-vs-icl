@@ -154,6 +154,7 @@ python3 validate.py "-" \
     --save-interval-updates 1000000 \
     --validate-interval 1000000 \
     --disable-validation \
+    --uid $SLURM_JOBID \
     --optim-group $optim_group \
     --distributed-world-size $NGPU \
     --use-linearization $use_linearization \

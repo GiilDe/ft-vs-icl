@@ -7,7 +7,6 @@
 Train a new model on one or across multiple GPUs.
 """
 from distutils.util import strtobool
-from linearize import LinearizedTLM
 import struprompting
 
 import argparse
@@ -95,10 +94,6 @@ def main(cfg: FairseqConfig) -> None:
             model = fsdp_wrap(task.build_model(cfg.model))
     else:
         model = task.build_model(cfg.model)
-
-    assert isinstance(model, LinearizedTLM) == bool(
-        strtobool(cfg.model.use_linearization)
-    )
 
     criterion = task.build_criterion(cfg.criterion)
     logger.info(model)

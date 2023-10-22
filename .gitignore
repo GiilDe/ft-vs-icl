@@ -9,7 +9,7 @@ en_dense_lm_125m.tar.gz
 written/paper10.log
 written/paper10.fdb_latexmk
 written/paper10.synctex.gz
-
+old/*
 test.py
 agnews_1_3b_linear.txt
 agnews_1_3b_non_linear.txt

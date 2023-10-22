@@ -139,6 +139,7 @@ python3 validate.py "-" \
     --ana-attn $ana_attn \
     --ana-rlt-dir $ana_rlt_dir \
     --ana-setting $ana_setting \
+    --uid $SLURM_JOBID \
     --distributed-world-size $NGPU \
     --use-linearization $use_linearization \
     --permut-index $perm_id |& tee $OUTPUT_PATH/train_log_$ana_setting.txt
