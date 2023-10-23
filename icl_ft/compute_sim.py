@@ -13,7 +13,7 @@ model = sys.argv[3]
 model = f"en_dense_lm_{model}"
 
 # !!! replace by your $base_dir/ana_rlt here
-base_dir = "base/ana_rlt"
+base_dir = "base_dir/ana_rlt"
 ana_rlt_dir = f"{base_dir}/{model}"
 
 save_rlts = {}
