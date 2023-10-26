@@ -35,7 +35,7 @@ rm $ana_rlt_dir/ft/record_info.jsonl
 optim_group=attn_kv
 lr=$try_lr
 max_epoch=1
-save_dir=$base_dir/ft_gpt/$task/$model_name/$lr_${SLURM_JOBID}
+save_dir=$base_dir/ft_gpt/$task/$model_name/${lr}_${SLURM_JOBID}
 # TODO: here too
 # rm -r $save_dir
 # mkdir -p $save_dir
@@ -62,7 +62,7 @@ mv tmp_ana_rlt/${SLURM_JOBID}_ft_record_info.jsonl $ana_rlt_dir/ft/record_info.j
 k=0
 ana_attn=1
 ana_setting=ftzs
-model_path=$base_dir/ft_gpt/$task/$model_name/$lr_${SLURM_JOBID}/checkpoint_last.pt
+model_path=$base_dir/ft_gpt/$task/$model_name/${lr}_${SLURM_JOBID}/checkpoint_last.pt
 rm $ana_rlt_dir/ftzs/record_info.jsonl
 
 mkdir -p $ana_rlt_dir/$ana_setting
@@ -93,7 +93,7 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $perm_id \
     $use_linearization
 
-cp tmp_ana_rlt/${SLURM_JOBID}_zs_record_info.jsonl $ana_rlt_dir/zs/record_info.jsonl
+mv tmp_ana_rlt/${SLURM_JOBID}_zs_record_info.jsonl $ana_rlt_dir/zs/record_info.jsonl
 
 # ==================== analyzing ICL setting ============
 

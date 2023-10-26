@@ -14,8 +14,8 @@ model = f"en_dense_lm_{model}"
 uid = sys.argv[4]
 
 # !!! replace by your $base_dir/ana_rlt here
-base_dir = "base_dir/ana_rlt"
-ana_rlt_dir = f"{base_dir}/{model}"
+ana_dir = "base_dir/ana_rlt"
+ana_model_dir = f"{ana_dir}/{model}"
 
 save_rlts = {}
 debug_scale = 1
@@ -23,7 +23,7 @@ debug_n = 10000
 
 
 def load_info(uid, ana_setting):
-    rlt_dir = f"{ana_rlt_dir}/{task}_{uid}/{ana_setting}"
+    rlt_dir = f"{ana_model_dir}/{task}_{uid}/{ana_setting}"
     info = []
     # jsonlines
     to_read_num = debug_n
@@ -303,9 +303,9 @@ def analyze_attn_map_revised(mode, key, softmax=True, sim_func=cal_cos_sim):
 
 stt_time = time.time()
 
-count_f2t()
-print(f'count_f2t costs {time.time() - stt_time} seconds')
-stt_time = time.time()
+# count_f2t()
+# print(f'count_f2t costs {time.time() - stt_time} seconds')
+# stt_time = time.time()
 
 analyze_sim(mode, 'self_attn_out_hiddens', normalize=True)
 print(f'analyze_sim costs {time.time() - stt_time} seconds')
@@ -315,7 +315,7 @@ analyze_attn_map_revised(mode, 'attn_map', softmax=False, sim_func=cal_cos_sim)
 print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
 stt_time = time.time()
 
-with open(f'{base_dir}/rlt_json/{uid}-{task}-{model}.json', 'w') as f:
+with open(f'{ana_dir}/rlt_json/{uid}-{task}-{model}.json', 'w') as f:
     json.dump(save_rlts, f, indent=2)
 
 print(f'saving data costs {time.time() - stt_time} seconds')

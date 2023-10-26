@@ -74,7 +74,7 @@ class FewshotFTCriterion(FairseqCriterion):
         loss_mask = sample["net_input"]["gpt_loss_mask"][:, 1:]
         sample_size = sample["net_input"]["src_tokens"].size(0)
         net_output, extra = model(
-            sample["net_input"]["src_tokens"]
+            sample["net_input"]["src_tokens"], per_layer=self.per_layer
         )
         targets = sample["net_input"]["src_tokens"][:, 1:].unsqueeze(-1)
 

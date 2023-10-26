@@ -20,12 +20,12 @@ MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
 #--------------------model_name model_arch task k seed perm_id output_path base_dir lr use_linearization clip_norm per_layer
 
 
-while IFS=' ' read -r task num_demonstrations seed perm_id learning_rate clip_norm per_layer; do
-  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_learning_rate_${learning_rate}_clip_norm_${clip_norm}"
+while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
+  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_clip_norm_${clip_norm}"
   echo $name
   echo run.sh
   bash run.sh $MODEL_NAME $MODEL_ARCH $task $num_demonstrations \
-  $seed $perm_id output_dir base_dir $learning_rate 0 $clip_norm $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
+  $seed $perm_id output_dir base_dir $lr 0 $clip_norm $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
   echo run compute_sim.py
   python3 icl_ft/compute_sim.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"
   

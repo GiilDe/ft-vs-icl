@@ -136,6 +136,7 @@ class GPTDecoder(TransformerDecoder):
         attention_mask: Optional[Tensor] = None,
         positions: Optional[Tensor] = None,
         external_qkv: bool = False,
+        per_layer: bool = False,
         **kwargs,
     ):
         x, extra = self.extract_features_scriptable(
@@ -148,12 +149,14 @@ class GPTDecoder(TransformerDecoder):
             attention_mask=attention_mask,
             positions=positions,
             external_qkv=external_qkv,
+            per_layer=per_layer,
         )
 
         if not features_only:
             x = self.output_layer(features=x)
-            for i in range(len(extra["inner_outputs"])):
-                extra["inner_outputs"][i] = self.output_layer(features=extra["inner_outputs"][i])
+            if per_layer:
+                for i in range(len(extra["inner_outputs"])):
+                    extra["inner_outputs"][i] = self.output_layer(features=extra["inner_outputs"][i])
         return x, extra
 
     def extract_features_scriptable(
@@ -167,6 +170,7 @@ class GPTDecoder(TransformerDecoder):
         attention_mask: Optional[Tensor] = None,
         positions: Optional[Tensor] = None,
         external_qkv: bool = False,
+        per_layer: bool = False,
     ):
         """
         Similar to *extract_features_scriptable* in transformer_decoder.py
@@ -244,7 +248,7 @@ class GPTDecoder(TransformerDecoder):
 
             layer_attn = None
             x, qkv_val_sub, _, self_attn_out_hidden = layer(
-                x.detach(),
+                x.detach() if per_layer else x,
                 enc,
                 padding_mask,
                 incremental_state,
@@ -261,22 +265,24 @@ class GPTDecoder(TransformerDecoder):
 
             inner_states.append(x)
 
-            x_res = x
-            if self.layer_norm is not None:
-                x_res = self.layer_norm(x_res)
-                if self.alpha is not None:
-                    x_res = torch.mul(self.alpha, x_res)
-
-            # T x B x C -> B x T x C
-            x_res = x_res.transpose(0, 1)
-
-            if self.project_out_dim is not None:
-                x_res = self.project_out_dim(x_res)
-
-            inner_outputs.append(x_res)
-
             if layer_attn is not None and idx == alignment_layer:
                 attn = layer_attn.float().to(x)
+
+            if per_layer or idx == len(self.layers) - 1:
+                x_res = x
+                if self.layer_norm is not None:
+                    x_res = self.layer_norm(x_res)
+                    if self.alpha is not None:
+                        x_res = torch.mul(self.alpha, x_res)
+
+                # T x B x C -> B x T x C
+                x_res = x_res.transpose(0, 1)
+
+                if self.project_out_dim is not None:
+                    x_res = self.project_out_dim(x_res)
+
+            if per_layer:
+                inner_outputs.append(x_res)
 
         x = x_res
 

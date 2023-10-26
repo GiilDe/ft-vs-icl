@@ -1,0 +1,33 @@
+base_dir/ana_rlt/en_dense_lm_1_3b/mr_83732/ftzs 1066
+loading ftzs data costs 44.360170125961304 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/mr_83732/zs 1066
+loading zs data costs 26.691808700561523 seconds
+base_dir/ana_rlt/en_dense_lm_1_3b/mr_83732/icl 1066
+loading icl data costs 32.78728461265564 seconds
+============================== analyzing self_attn_out_hiddens ==============================
+per-layer updates sim (icl-zs)&(ftzs-zs):
+ [0.563  0.1665 0.0279 0.0076 0.1007 0.1127 0.1383 0.1194 0.1036 0.172
+ 0.2021 0.2815 0.3243 0.39   0.4289 0.3682 0.3068 0.229  0.3161 0.1513
+ 0.2864 0.2471 0.1355 0.1572]
+overall updates sim (icl-zs)&(ftzs-zs):
+ 0.2223
+
+per-layer updates sim (icl-zs)&(random):
+ [ 0.0008  0.0014  0.0193  0.0101  0.004   0.0026  0.0129 -0.002  -0.0007
+ -0.0044 -0.0108  0.0003 -0.0045  0.0031  0.0042 -0.0003 -0.0045 -0.0009
+ -0.0054 -0.0091 -0.002  -0.0008  0.003   0.002 ]
+overall updates sim (icl-zs)&(random):
+ 0.0008
+
+analyze_sim costs 10.683313608169556 seconds
+============================== analyzing attn_map, softmax=False ==============================
+per-layer direct sim (icl)&(zs):
+ [ 2.010e-02 -3.729e-01 -6.004e-01 -1.070e-01 -1.110e-02  1.709e-01
+  1.117e-01  5.880e-02 -1.107e-01 -9.810e-02  1.863e-01  1.349e-01
+  5.771e-01  7.074e-01  7.114e-01  5.495e-01  6.398e-01  6.720e-01
+  4.247e-01  3.196e-01  3.460e-02  1.326e-01 -7.000e-04 -1.000e-03]
+overall direct sim (icl)&(zs):
+ 0.1729
+
+analyze_attn_map (w/o softmax) costs 64.28371286392212 seconds
+saving data costs 0.02324199676513672 seconds
