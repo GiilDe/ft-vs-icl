@@ -8,7 +8,7 @@ We use [Fairseq-LM](https://github.com/facebookresearch/fairseq/tree/main/exampl
 
 ### Step 1: Producing the recording information
 ```bash
-bash run.sh ${model_name} ${model_arch} ${task} ${k} ${seed} ${perm_id} ${output_path} ${base_dir} ${lr} ${use_linearization} ${per_layer}
+bash run.sh ${model_name} ${model_arch} ${task} ${k} ${seed} ${perm_id} ${output_path} ${base_dir} ${lr} ${per_layer}
 ```
 - `model_name`: Specify the model to analyze, e.g., en_dense_lm_1_3b.
 - `model_arch`: Each model corresponds to a specific architecture: `gptmodel_large` (1.3B), `gptmodel_xl` (2.7B)
@@ -19,7 +19,6 @@ bash run.sh ${model_name} ${model_arch} ${task} ${k} ${seed} ${perm_id} ${output
 - `output_path`: The output path.
 - `base_dir`: Base directory for experiments. 
 - `lr`: Learning rate used in the finetuning setting. Please refer to our paper to set it.
-- `use_linearization`: Please refer to our paper.
 - `per_layer`: Please refer to our paper.
 
 In `run.sh`, based on `base_dir`, 

@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from fairseq.dataclass import ChoiceEnum, FairseqDataclass
 from torch import Tensor
-from linearize import LinearizedTLM
 from distutils.util import strtobool
 
 import logging
@@ -37,8 +36,6 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         default="",
         metadata={"help": "gpt checkpoint path"},
     )
-    use_linearization: str = field(default=0)
-    sum_extra_jvp_result: bool = field(default=True)
 
 
 @register_model("gptmodel", dataclass=GPTModelConfig)
@@ -55,35 +52,15 @@ class GPTmodel(TransformerLanguageModel):
         )
 
         if args.gpt_model_path != "":
-            if (
-                bool(strtobool(args.use_linearization))
-                and "gpt_icl" not in args.gpt_model_path # if we're loading the original checkpoint, don't linearize
-                and not isinstance(model, LinearizedTLM)
-            ):
-                logging.info("Loading linearization")
-                logging.info(f"sum_extra_jvp_result: {args.sum_extra_jvp_result}")
-                # if we're loading a checkpoint that isn't the original one, make sure our model is linearized
-                model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
             model.load_state_dict(state["model"], strict=True, args=args)
-
-            if bool(strtobool(args.use_linearization)) and not isinstance(model, LinearizedTLM):
-                # if we didn't linearize the model previously, do it now
-                logging.info("Loading linearization")
-                model = LinearizedTLM(model, sum_extra_jvp_results=args.sum_extra_jvp_result)
-                logging.info(f"sum_extra_jvp_result: {args.sum_extra_jvp_result}")
 
         # ! ICL analysis
         if task.cfg.ana_setting in ["zs", "ftzs", "icl"]:
             for p in model.parameters():
                 p.requires_grad = False
 
-        named_params = (
-            model.named_parameters()
-            if not isinstance(model, LinearizedTLM)
-            else model.named_parameters_for_setting_grad()
-        )
-        for n, p in named_params:
+        for n, p in model.named_parameters():
             if "bias" in n:
                 p.requires_grad = True
                 break

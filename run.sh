@@ -16,9 +16,8 @@ ana_rlt_dir=$base_dir/ana_rlt/$model_name/${task}_${SLURM_JOBID}
 icl_k=$4
 perm_id=$6
 try_lr=$9
-use_linearization=${10}
-clip_norm=${11}
-per_layer=${12}
+clip_norm=${10}
+per_layer=${11}
 
 # TODO: solve the problem of the following two lines
 # rm -r tmp_ana_rlt
@@ -51,7 +50,6 @@ bash scripts/ana_train.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_path 
     $save_dir \
     $optim_group \
     $perm_id \
-    $use_linearization \
     $clip_norm \
     $per_layer
 
@@ -71,8 +69,7 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $ana_attn \
     $ana_rlt_dir \
     $ana_setting \
-    $perm_id \
-    $use_linearization
+    $perm_id
 
 mv tmp_ana_rlt/${SLURM_JOBID}_ftzs_record_info.jsonl $ana_rlt_dir/ftzs/record_info.jsonl
 
@@ -90,8 +87,7 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $ana_attn \
     $ana_rlt_dir \
     $ana_setting \
-    $perm_id \
-    $use_linearization
+    $perm_id
 
 mv tmp_ana_rlt/${SLURM_JOBID}_zs_record_info.jsonl $ana_rlt_dir/zs/record_info.jsonl
 
@@ -109,7 +105,6 @@ bash scripts/ana_validate.sh $seed $task $model_path $arch $k $bsz $ngpu $bpe_pa
     $ana_attn \
     $ana_rlt_dir \
     $ana_setting \
-    $perm_id \
-    $use_linearization
+    $perm_id
     
 mv tmp_ana_rlt/${SLURM_JOBID}_icl_record_info.jsonl $ana_rlt_dir/icl/record_info.jsonl

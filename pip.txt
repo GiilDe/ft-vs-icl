@@ -15,7 +15,7 @@ colorama==0.4.6
 Cython==3.0.0
 datasets==2.4.0
 dill==0.3.5.1
--e git+https://github.com/GiilDe/ft-vs-icl@ffbe852afa35fec3c17c05b001b5304186a2e090#egg=fairseq&subdirectory=fairseq
+-e ./fairseq
 filelock==3.12.2
 frozenlist==1.4.0
 fsspec==2023.6.0

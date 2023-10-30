@@ -29,7 +29,6 @@ from fairseq.optim import lr_scheduler
 from fairseq.utils import safe_hasattr
 from omegaconf import OmegaConf
 
-from linearize import LinearizedTLM
 
 logger = logging.getLogger(__name__)
 
@@ -288,11 +287,8 @@ class Trainer(object):
         return self._lr_scheduler
 
     def _build_optimizer(self):
-        named_params = (
-            self.model.named_parameters()
-            if not isinstance(self.model, LinearizedTLM)
-            else self.model.named_parameters_for_setting_grad()
-        )
+        named_params = self.model.named_parameters()
+        
         if self.cfg.task.optim_group == 'all':
             params = list(
                 filter(

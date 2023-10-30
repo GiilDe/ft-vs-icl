@@ -7,9 +7,9 @@
 #SBATCH --nodes=1 # number of machines
 #SBATCH --ntasks=1 # number of processes
 #SBATCH --gpus=1 # GPUs in total
-# SBATCH --signal=USR1@120 # how to end job when time’s up
-# SBATCH --mem=50000 # CPU memory (MB)
-# SBATCH --cpus-per-task=4 # CPU cores per process
+#SBATCH --signal=USR1@120 # how to end job when time’s up
+#SBATCH --mem=50000 # CPU memory (MB)
+#SBATCH --cpus-per-task=4 # CPU cores per process
 
 echo HELLO $SLURM_JOBID
 
@@ -17,7 +17,7 @@ MODEL_SHORT="1_3b"
 MODEL_ARCH="gptmodel_large"
 MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
 
-#--------------------model_name model_arch task k seed perm_id output_path base_dir lr use_linearization clip_norm per_layer
+#--------------------model_name model_arch task k seed perm_id output_path base_dir lr clip_norm per_layer
 
 
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
@@ -25,7 +25,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   echo $name
   echo run.sh
   bash run.sh $MODEL_NAME $MODEL_ARCH $task $num_demonstrations \
-  $seed $perm_id output_dir base_dir $lr 0 $clip_norm $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
+  $seed $perm_id output_dir base_dir $lr $clip_norm $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
   echo run compute_sim.py
   python3 icl_ft/compute_sim.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"
   
