@@ -40,15 +40,10 @@ def load_info(uid, ana_setting):
     return info
 
 
-def cal_cos_sim(v1, v2):
+def calc_cos_sim(v1, v2):
     num = (v1 * v2).sum(axis=-1)  # dot product
     denom = np.linalg.norm(v1, axis=-1) * np.linalg.norm(v2, axis=-1) + 1e-20  # length
     res = num / denom
-    return res
-
-
-def cal_kl(v1, v2, axis=-1):
-    res = scipy.stats.entropy(v1, v2, axis=-1)
     return res
 
 
@@ -61,8 +56,10 @@ def np_softmax(x, axis=-1):
 def check_answer(info_item):
     return info_item['gold_label'] == info_item['pred_label']
 
+
 def is_same_pred(zsl_item, update_item):
     return zsl_item['pred_label'] == update_item['pred_label']
+
 
 def normalize_hidden(hidden):
     norm = np.linalg.norm(hidden, axis=-1) + 1e-20  # length
@@ -107,12 +104,12 @@ def analyze_sim(infos, mode, key, normalize=False):
     icl_hidden = np.array(icl_hidden)
     ftzs_hidden = np.array(ftzs_hidden)
 
-    icl_updates = icl_hidden - zs_hidden  # n_examples, n_layers, hidden_dim
+    icl_updates = icl_hidden - zs_hidden
     ftzs_updates = ftzs_hidden - zs_hidden
 
     print('======' * 5, f'analyzing {key}', '======' * 5)
 
-    cos_sim = cal_cos_sim(icl_updates, ftzs_updates)
+    cos_sim = calc_cos_sim(icl_updates, ftzs_updates)
     cos_sim = cos_sim.mean(axis=0)
     save_rlts['SimAOU'] = cos_sim.tolist()
     print("per-layer updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
@@ -121,7 +118,7 @@ def analyze_sim(infos, mode, key, normalize=False):
     print()
 
     random_updates = np.random.random(ftzs_updates.shape)
-    baseline_cos_sim = cal_cos_sim(icl_updates, random_updates)
+    baseline_cos_sim = calc_cos_sim(icl_updates, random_updates)
     baseline_cos_sim = baseline_cos_sim.mean(axis=0)
     save_rlts['Random SimAOU'] = baseline_cos_sim.tolist()
     print("per-layer updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
@@ -130,7 +127,7 @@ def analyze_sim(infos, mode, key, normalize=False):
     print()
 
 
-def analyze_attn_map(infos, mode, key, softmax=False, sim_func=cal_cos_sim, diff=True):
+def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, diff=True):
     # n_examples, n_layers, n_heads, len
     zs_attn_map, icl_attn_map, ftzs_attn_map = prepare_hiddens(
         infos, mode, key, normalize=False
@@ -159,6 +156,8 @@ def analyze_attn_map(infos, mode, key, softmax=False, sim_func=cal_cos_sim, diff
         print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
         print()
     else:
+        sim = sim_func(icl_attn_map, zs_attn_map)
+        sim = sim.mean(axis=2).mean(axis=0)
         save_rlts['ZSL SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
@@ -192,7 +191,7 @@ def main():
     
     stt_time = time.time()
     analyze_attn_map(infos, mode, 'attn_map', softmax=False, 
-                     sim_func=cal_cos_sim, diff=True)
+                     sim_func=calc_cos_sim, diff=True)
     print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()

@@ -40,4 +40,4 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   rm -r $save_dir
   rm -r $output_path
   rm -r $ana_rlt_dir
-done < cmdline_args.txt
+done < configs/cmdline_args.txt
