@@ -1,6 +1,0 @@
-base_dir/ana_rlt/en_dense_lm_1_3b/subj_83670/ftzs 2000
-loading ftzs data costs 87.60850024223328 seconds
-base_dir/ana_rlt/en_dense_lm_1_3b/subj_83670/zs 2872
-loading zs data costs 78.70357584953308 seconds
-base_dir/ana_rlt/en_dense_lm_1_3b/subj_83670/icl 2000
-loading icl data costs 65.3703966140747 seconds

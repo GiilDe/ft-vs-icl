@@ -23,11 +23,16 @@ MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
   name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_clip_norm_${clip_norm}"
   echo $name
+  
   echo run.sh
-  bash run.sh $MODEL_NAME $MODEL_ARCH $task $num_demonstrations \
-  $seed $perm_id output_dir base_dir $lr $clip_norm $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
-  echo run compute_sim.py
-  python3 icl_ft/compute_sim.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"
+  bash run.sh --model_name $MODEL_NAME --arch $MODEL_ARCH \
+--task $task --icl_k $num_demonstrations \
+--seed $seed --perm_id $perm_id --output_base_dir output_dir --base_dir base_dir \
+--lr $lr --clip_norm $clip_norm \
+--per_layer $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
+ 
+  echo run analysis.py
+  python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"
   
   ana_rlt_dir=base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
   output_path=output_dir/${SLURM_JOBID}
