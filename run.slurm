@@ -32,12 +32,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
 --per_layer $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
  
   echo run analysis.py
-  python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"
-  
+  python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"  
   ana_rlt_dir=base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
-  output_path=output_dir/${SLURM_JOBID}
-  save_dir=base_dir/ft_gpt/$task/$MODEL_NAME/${lr}_${SLURM_JOBID}
-  rm -r $save_dir
-  rm -r $output_path
   rm -r $ana_rlt_dir
 done < configs/cmdline_args.txt

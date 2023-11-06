@@ -1,2 +1,0 @@
-base_dir/ana_rlt/en_dense_lm_1_3b/sst5_86627/ftzs 1101
-loading ftzs data costs 51.07731580734253 seconds
