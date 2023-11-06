@@ -134,7 +134,6 @@ python3 validate.py "-" \
     --fp16 \
     --eval-data $TASK \
     --fp16-init-scale 4 \
-    --checkpoint-activations \
     --fp16-scale-window 256 \
     --seed $SEED \
     --reset-dataloader \
