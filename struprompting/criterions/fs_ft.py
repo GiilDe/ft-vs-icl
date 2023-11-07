@@ -19,7 +19,6 @@ from fairseq.logging import metrics
 from fairseq import modules, utils
 from fairseq.criterions import FairseqCriterion, register_criterion
 from fairseq.dataclass import FairseqDataclass
-from struprompting.data.squad.squad_metrics import compute_f1, compute_exact
 
 
 @dataclass
