@@ -22,7 +22,7 @@ debug_scale = 1
 debug_n = 10000
 
 
-def load_info(uid, ana_setting):
+def load_info(ana_setting):
     rlt_dir = f"{ana_model_dir}/{task}_{uid}/{ana_setting}"
     info = [None] * debug_n
     with open(f"{rlt_dir}/record_info.jsonl", "r") as f:
@@ -174,16 +174,17 @@ def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, dif
 
 def main():
     stt_time = time.time()
-    ftzs_info = load_info(uid, 'ftzs')
+    ftzs_info = load_info('ftzs')
     print(f'loading ftzs data costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    zs_info = load_info(uid, 'zs')
+    zs_info = load_info('zs')
     print(f'loading zs data costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    icl_info = load_info(uid, 'icl')
+    icl_info = load_info('icl')
     print(f'loading icl data costs {time.time() - stt_time} seconds')
+    
     infos = [zs_info, icl_info, ftzs_info]
     stt_time = time.time()
     analyze_sim(infos, mode, 'self_attn_out_hiddens', normalize=True)

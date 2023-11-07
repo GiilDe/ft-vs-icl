@@ -21,7 +21,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --icl_k)
-            k="$2"
+            icl_k="$2"
             shift 2
             ;;
         --output_base_dir)
@@ -56,7 +56,7 @@ echo "arch: $arch"
 echo "base_dir: $base_dir"
 echo "seed: $seed"
 echo "task: $task"
-echo "icl_k: $k"
+echo "icl_k: $icl_k"
 echo "output_base_dir: $output_base_dir"
 echo "perm_id: $perm_id"
 echo "lr: $lr"
@@ -111,7 +111,7 @@ python3 validate.py - \
     --fp16-scale-window 256 \
     --seed $seed \
     --reset-dataloader \
-    --k $k \
+    --k $icl_k \
     --batch-size $bsz \
     --batch-size-valid $bsz \
     --ddp-backend=no_c10d \
@@ -135,6 +135,7 @@ python3 validate.py - \
 mv tmp_ana_rlt/${SLURM_JOBID}_ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
 
 # =========== Evaluate FT, ZS, ICL Models ============
+n_classes=2 # case sst2, mr, subj
 if [ "$task" = "agnews" ]
 then
 n_classes=4
@@ -163,7 +164,7 @@ for ana_setting in $settings; do
             ;;
         "icl")
             model_path=$base_dir/gpt_icl/$model_name/model.pt
-            k=$k
+            k=$icl_k
             ;;
         *)
             echo "Unknown setting: $ana_setting"

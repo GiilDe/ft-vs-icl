@@ -11,6 +11,8 @@
 #SBATCH --mem=50000 # CPU memory (MB)
 #SBATCH --cpus-per-task=4 # CPU cores per process
 
+DEBUG_MODE=true
+
 echo HELLO $SLURM_JOBID
 
 MODEL_SHORT="1_3b"
@@ -18,7 +20,6 @@ MODEL_ARCH="gptmodel_large"
 MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
 
 #--------------------model_name model_arch task k seed perm_id output_path base_dir lr clip_norm per_layer
-
 
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
   name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_clip_norm_${clip_norm}"
@@ -34,5 +35,10 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   echo run analysis.py
   python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"  
   ana_rlt_dir=base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
-  rm -r $ana_rlt_dir
+  
+  if DEBUG_MODE; then
+    echo DEBUG MODE
+  else
+    rm -r $ana_rlt_dir
+  fi
 done < configs/cmdline_args.txt
