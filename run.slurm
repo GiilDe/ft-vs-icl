@@ -11,8 +11,6 @@
 #SBATCH --mem=50000 # CPU memory (MB)
 #SBATCH --cpus-per-task=4 # CPU cores per process
 
-DEBUG_MODE=0
-
 echo HELLO $SLURM_JOBID
 
 MODEL_SHORT="1_3b"
@@ -41,9 +39,5 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   python3 scripts/analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
   ana_rlt_dir=$base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
   
-  if DEBUG_MODE; then
-    echo DEBUG MODE
-  else
-    rm -r $ana_rlt_dir
-  fi
+  rm -r $ana_rlt_dir
 done < $1
