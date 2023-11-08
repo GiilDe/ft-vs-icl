@@ -132,7 +132,7 @@ python3 validate.py - \
     --per-layer $per_layer \
     --permut-index $perm_id |& tee $output_path/train_log_$ana_setting.txt
 
-mv tmp_ana_rlt/${SLURM_JOBID}_ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
+mv artifacts/tmp_ana_rlt/${SLURM_JOBID}_ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
 
 # =========== Evaluate FT, ZS, ICL Models ============
 n_classes=2 # case sst2, mr, subj
@@ -210,7 +210,7 @@ for ana_setting in $settings; do
     --distributed-world-size $ngpu \
     --permut-index $perm_id |& tee $output_path/train_log_$ana_setting.txt
         
-    mv tmp_ana_rlt/${SLURM_JOBID}_${ana_setting}_record_info.jsonl \
+    mv artifacts/tmp_ana_rlt/${SLURM_JOBID}_${ana_setting}_record_info.jsonl \
         $ana_rlt_dir/$ana_setting/record_info.jsonl
 done
 

@@ -1,24 +1,20 @@
 import json
-import os
 import numpy as np
 import sys
-import copy
 import jsonlines
 import time
-import scipy.stats
 
 task = sys.argv[1]
 mode = sys.argv[2]
 model = sys.argv[3]
 model = f"en_dense_lm_{model}"
 uid = sys.argv[4]
+base_dir = sys.argv[5]
 
-# !!! replace by your $base_dir/ana_rlt here
-ana_dir = "base_dir/ana_rlt"
+ana_dir = base_dir + "/ana_rlt"
 ana_model_dir = f"{ana_dir}/{model}"
 
 save_rlts = {}
-debug_scale = 1
 debug_n = 10000
 
 
@@ -36,7 +32,6 @@ def load_info(ana_setting):
     info = info[:i]
     nfiles = len(info)
     print(rlt_dir, nfiles)
-    info = info[:nfiles//debug_scale]
     return info
 
 

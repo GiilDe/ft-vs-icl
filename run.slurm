@@ -11,13 +11,18 @@
 #SBATCH --mem=50000 # CPU memory (MB)
 #SBATCH --cpus-per-task=4 # CPU cores per process
 
-DEBUG_MODE=true
+DEBUG_MODE=0
 
 echo HELLO $SLURM_JOBID
 
 MODEL_SHORT="1_3b"
 MODEL_ARCH="gptmodel_large"
 MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
+
+output_base_dir="artifacts/output_dir"
+base_dir="artifacts/base_dir"
+log_dir="artifacts/logs"
+debug_dir="artifacts/debug"
 
 #--------------------model_name model_arch task k seed perm_id output_path base_dir lr clip_norm per_layer
 
@@ -28,17 +33,17 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   echo run.sh
   bash run.sh --model_name $MODEL_NAME --arch $MODEL_ARCH \
 --task $task --icl_k $num_demonstrations \
---seed $seed --perm_id $perm_id --output_base_dir output_dir --base_dir base_dir \
+--seed $seed --perm_id $perm_id --output_base_dir $output_base_dir --base_dir $base_dir \
 --lr $lr --clip_norm $clip_norm \
---per_layer $per_layer > "artifacts/${name}.out" 2> "artifacts/${name}.err"
+--per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
   echo run analysis.py
-  python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} > "logs/${name}.txt"  
-  ana_rlt_dir=base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
+  python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
+  ana_rlt_dir=$base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
   
   if DEBUG_MODE; then
     echo DEBUG MODE
   else
     rm -r $ana_rlt_dir
   fi
-done < configs/cmdline_args.txt
+done < $1
