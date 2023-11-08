@@ -88,7 +88,7 @@ max_epoch=1
 rm $ana_rlt_dir/ft/record_info.jsonl
 mkdir -p $ana_rlt_dir/$ana_setting
 
-python3 validate.py - \
+python3 scripts/validate.py - \
     --task fs_eval \
     --tokens-per-sample 2048  \
     --criterion fs_ft \
@@ -175,7 +175,7 @@ for ana_setting in $settings; do
     rm $ana_rlt_dir/$ana_setting/record_info.jsonl
     mkdir -p $ana_rlt_dir/$ana_setting
 
-    python3 validate.py "-" \
+    python3 scripts/validate.py - \
     --task fs_eval \
     --tokens-per-sample 2048  \
     --criterion fs_eval \

@@ -38,7 +38,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
 --per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
   echo run analysis.py
-  python3 analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
+  python3 scripts/analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
   ana_rlt_dir=$base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
   
   if DEBUG_MODE; then
