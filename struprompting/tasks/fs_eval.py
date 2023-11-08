@@ -399,7 +399,7 @@ class FewshotEval(FairseqTask):
         if self.cfg.ana_attn:
             assert self.cfg.ana_setting == 'ft'
             record_info['attn_q'] = record_info['attn_q'].tolist()  # (n_layers, n_token, q_hidden_dim)
-            with jsonlines.open(f'attifacts/tmp_ana_rlt/{self.cfg.uid}_{self.cfg.ana_setting}_record_info.jsonl', 'a') as writer:
+            with jsonlines.open(f'artifacts/tmp_ana_rlt/{self.cfg.uid}_{self.cfg.ana_setting}_record_info.jsonl', 'a') as writer:
                 writer.write(record_info)
         if ignore_grad:
             loss *= 0
