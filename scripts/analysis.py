@@ -1,3 +1,4 @@
+import os
 import json
 import numpy as np
 import sys
@@ -11,17 +12,17 @@ model = f"en_dense_lm_{model}"
 uid = sys.argv[4]
 base_dir = sys.argv[5]
 
-ana_dir = base_dir + "/ana_rlt"
-ana_model_dir = f"{ana_dir}/{model}"
+base_results_dir = base_dir + "/analysis_results"
+model_results_dir = f"{base_results_dir}/{model}"
 
-save_rlts = {}
+results_dict = {}
 debug_n = 10000
 
 
-def load_info(ana_setting):
-    rlt_dir = f"{ana_model_dir}/{task}_{uid}/{ana_setting}"
+def load_info(analysis_setting):
+    results_dir = f"{model_results_dir}/{task}_{uid}/{analysis_setting}"
     info = [None] * debug_n
-    with open(f"{rlt_dir}/record_info.jsonl", "r") as f:
+    with open(f"{results_dir}/record_info.jsonl", "r") as f:
         i = 0
         for item in jsonlines.Reader(f):
             if i >= debug_n:
@@ -31,7 +32,7 @@ def load_info(ana_setting):
     
     info = info[:i]
     nfiles = len(info)
-    print(rlt_dir, nfiles)
+    print(results_dir, nfiles)
     return info
 
 
@@ -106,7 +107,7 @@ def analyze_sim(infos, mode, key, normalize=False):
 
     cos_sim = calc_cos_sim(icl_updates, ftzs_updates)
     cos_sim = cos_sim.mean(axis=0)
-    save_rlts['SimAOU'] = cos_sim.tolist()
+    results_dict['SimAOU'] = cos_sim.tolist()
     print("per-layer updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
     cos_sim = cos_sim.mean()
     print("overall updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
@@ -115,7 +116,7 @@ def analyze_sim(infos, mode, key, normalize=False):
     random_updates = np.random.random(ftzs_updates.shape)
     baseline_cos_sim = calc_cos_sim(icl_updates, random_updates)
     baseline_cos_sim = baseline_cos_sim.mean(axis=0)
-    save_rlts['Random SimAOU'] = baseline_cos_sim.tolist()
+    results_dict['Random SimAOU'] = baseline_cos_sim.tolist()
     print("per-layer updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
     baseline_cos_sim = baseline_cos_sim.mean()
     print("overall updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
@@ -145,7 +146,7 @@ def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, dif
         ft_attn_map_update = ftzs_attn_map - zs_attn_map
         sim = sim_func(icl_attn_map_update, ft_attn_map_update)
         sim = sim.mean(axis=2).mean(axis=0)
-        save_rlts['ICL-FTZS SimAM'] = sim.tolist()
+        results_dict['ICL-FTZS SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
         print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
@@ -153,14 +154,14 @@ def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, dif
     else:
         sim = sim_func(icl_attn_map, zs_attn_map)
         sim = sim.mean(axis=2).mean(axis=0)
-        save_rlts['ZSL SimAM'] = sim.tolist()
+        results_dict['ZSL SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
         print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
         print()
 
         sim = sim_func(icl_attn_map, ftzs_attn_map).mean(axis=2).mean(axis=0)
-        save_rlts['SimAM'] = sim.tolist()
+        results_dict['SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(ftzs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
         print("overall direct sim (icl)&(ftzs):\n", np.around(mean_sim, 4))
@@ -191,8 +192,9 @@ def main():
     print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    with open(f'{ana_dir}/rlt_json/{uid}-{task}-{model}.json', 'w') as f:
-        json.dump(save_rlts, f, indent=2)
+    os.mkdirs(f'{base_results_dir}/rlt_json', exist_ok=True)
+    with open(f'{base_results_dir}/rlt_json/{uid}-{task}-{model}.json', 'w') as f:
+        json.dump(results_dict, f, indent=2)
     print(f'saving data costs {time.time() - stt_time} seconds')
     stt_time = time.time()
 

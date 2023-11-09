@@ -37,7 +37,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
  
   echo run analysis.py
   python3 scripts/analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
-  ana_rlt_dir=$base_dir/ana_rlt/$MODEL_NAME/${task}_${SLURM_JOBID}
+  analysis_results_dir=$base_dir/analysis_results/$MODEL_NAME/${task}_${SLURM_JOBID}
   
-  rm -r $ana_rlt_dir
+  rm -r $analysis_results_dir
 done < $1

@@ -105,13 +105,13 @@ class FewshotEvalConfig(FairseqDataclass):
         default="", metadata={"help": "gpt dict file"}
     )
     
-    ana_attn: int = field(
+    analyze_attn: int = field(
         default=0, metadata={"help": "whether to log the attn hidden results"}
     )
-    ana_rlt_dir: str = field(
+    analysis_results_dir: str = field(
         default="/home/user/data/results", metadata={"help": "base directory to save analysis results"}
     )
-    ana_setting: str = field(
+    analysis_setting: str = field(
         default="zs", metadata={"help": "analysis setting, could be 'zs', 'icl', 'ft', or 'ftzs'"}
     )
     uid: int = field(
@@ -157,7 +157,7 @@ class FewshotEval(FairseqTask):
         self.max_pos_train = 0
 
         self.src_tokens, self.gpt_loss_mask, self.labels, self.answer_set, self.context_len = self.fewshot_task.get_data_for_fewshot()
-        if self.cfg.ana_setting == 'ft':
+        if self.cfg.analysis_setting == 'ft':
             self.ft_src_tokens, self.ft_gpt_loss_mask = self.fewshot_task.get_data_for_ft()
 
         self.num_validate_step = 0
@@ -194,7 +194,7 @@ class FewshotEval(FairseqTask):
     def load_dataset(self, split, combine=False, **kwargs):
         assert split == "train" or split == "valid"
 
-        if split == "train" and self.cfg.ana_setting == 'ft':
+        if split == "train" and self.cfg.analysis_setting == 'ft':
             src_tokens = RawArrayDataset(self.ft_src_tokens)
             gpt_loss_mask = RawArrayDataset(self.ft_gpt_loss_mask, datatype="mask")
 
@@ -377,13 +377,13 @@ class FewshotEval(FairseqTask):
         with torch.no_grad():
             loss, sample_size, logging_output, record_info = criterion(model, sample, split=split)
         self.num_validate_step += 1
-        if self.cfg.ana_attn:
-            assert self.cfg.ana_setting != 'ft'
-            if self.cfg.ana_setting == 'ftzs':
+        if self.cfg.analyze_attn:
+            assert self.cfg.analysis_setting != 'ft'
+            if self.cfg.analysis_setting == 'ftzs':
                 record_info['attn_q'] = record_info['attn_q'][:, -1, :].tolist()  # (n_layers, q_hidden_dim)
             else:
                 del record_info['attn_q']
-            with open(f'artifacts/tmp_ana_rlt/{self.cfg.uid}_{self.cfg.ana_setting}_record_info.jsonl', 'a') as fp:
+            with open(f'artifacts/tmp_results/{self.cfg.uid}_{self.cfg.analysis_setting}_record_info.jsonl', 'a') as fp:
                 writer = jsonlines.Writer(fp)
                 fcntl.flock(fp, fcntl.LOCK_EX)
                 writer.write(record_info)
@@ -398,8 +398,8 @@ class FewshotEval(FairseqTask):
         with torch.autograd.profiler.record_function("forward"):
             with torch.cuda.amp.autocast(enabled=(isinstance(optimizer, AMPOptimizer))):
                 loss, sample_size, logging_output, record_info = criterion(model, sample)
-        if self.cfg.ana_attn:
-            assert self.cfg.ana_setting == 'ft'
+        if self.cfg.analyze_attn:
+            assert self.cfg.analysis_setting == 'ft'
             record_info['attn_q'] = record_info['attn_q'].tolist()  # (n_layers, n_token, q_hidden_dim)
         if ignore_grad:
             loss *= 0

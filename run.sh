@@ -73,24 +73,24 @@ bpe_path=$base_dir/gpt_icl/vocab.bpe
 encoder_path=$base_dir/gpt_icl/encoder.json
 dict_path=$base_dir/gpt_icl/$model_name/dict.txt
 output_path=$output_base_dir/${SLURM_JOBID}
-ana_rlt_dir=$base_dir/ana_rlt/$model_name/${task}_${SLURM_JOBID}
+analysis_results_dir=$base_dir/analysis_results/$model_name/${task}_${SLURM_JOBID}
 model_path=$base_dir/gpt_icl/$model_name/model.pt
 save_dir=$base_dir/gpt_ft/$task/$model_name/${lr}_${SLURM_JOBID}
 
 bsz=1
-ana_attn=1
+analyze_attn=1
 
 mkdir -p $output_path
 echo  "output dir: $output_path"
 
 # ============= Train FT Model =============
 echo "Train FT Model"
-ana_setting=ft
+analysis_setting=ft
 optim_group=attn_kv
 max_epoch=1
 
-rm $ana_rlt_dir/ft/record_info.jsonl
-mkdir -p $ana_rlt_dir/$ana_setting
+rm $analysis_results_dir/ft/record_info.jsonl
+mkdir -p $analysis_results_dir/$analysis_setting
 
 python3 scripts/validate.py - \
     --task fs_eval \
@@ -121,9 +121,9 @@ python3 scripts/validate.py - \
     --ddp-backend=c10d \
     --gpt-dict $dict_path \
     --gpt-model-path $model_path \
-    --ana-attn $ana_attn \
-    --ana-rlt-dir $ana_rlt_dir \
-    --ana-setting $ana_setting \
+    --ana-attn $analyze_attn \
+    --ana-rlt-dir $analysis_results_dir \
+    --ana-setting $analysis_setting \
     --save-dir $save_dir \
     --save-interval $max_epoch \
     --save-interval-updates 1000000 \
@@ -133,7 +133,7 @@ python3 scripts/validate.py - \
     --optim-group $optim_group \
     --distributed-world-size $ngpu \
     --per-layer $per_layer \
-    --permut-index $perm_id |& tee $output_path/train_log_$ana_setting.txt
+    --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt
 
 # =========== Evaluate FT, ZS, ICL Models ============
 n_classes=2 # case sst2, mr, subj
@@ -153,8 +153,8 @@ fi
 bsz_eval=$((n_classes * bsz))
 settings="ftzs zs icl"
 
-for ana_setting in $settings; do
-    case $ana_setting in
+for analysis_setting in $settings; do
+    case $analysis_setting in
         "ftzs")
             model_path=$save_dir/checkpoint_last.pt
             k=0
@@ -168,13 +168,13 @@ for ana_setting in $settings; do
             k=$icl_k
             ;;
         *)
-            echo "Unknown setting: $ana_setting"
+            echo "Unknown setting: $analysis_setting"
             exit 1
             ;;
     esac
-    echo "Evaluate $ana_setting setting"
-    rm $ana_rlt_dir/$ana_setting/record_info.jsonl
-    mkdir -p $ana_rlt_dir/$ana_setting
+    echo "Evaluate $analysis_setting setting"
+    rm $analysis_results_dir/$analysis_setting/record_info.jsonl
+    mkdir -p $analysis_results_dir/$analysis_setting
 
     python3 scripts/validate.py - \
     --task fs_eval \
@@ -203,15 +203,15 @@ for ana_setting in $settings; do
     --ddp-backend=c10d \
     --gpt-dict $dict_path \
     --gpt-model-path $model_path \
-    --ana-attn $ana_attn \
-    --ana-rlt-dir $ana_rlt_dir \
-    --ana-setting $ana_setting \
+    --ana-attn $analyze_attn \
+    --ana-rlt-dir $analysis_results_dir \
+    --ana-setting $analysis_setting \
     --uid $SLURM_JOBID \
     --distributed-world-size $ngpu \
-    --permut-index $perm_id |& tee $output_path/train_log_$ana_setting.txt
+    --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt
         
-    mv artifacts/tmp_ana_rlt/${SLURM_JOBID}_${ana_setting}_record_info.jsonl \
-        $ana_rlt_dir/$ana_setting/record_info.jsonl
+    mv artifacts/tmp_results/${SLURM_JOBID}_${analysis_setting}_record_info.jsonl \
+        $analysis_results_dir/$analysis_setting/record_info.jsonl
 done
 
 rm -r $save_dir

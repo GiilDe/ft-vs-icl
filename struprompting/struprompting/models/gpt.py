@@ -56,7 +56,7 @@ class GPTmodel(TransformerLanguageModel):
             model.load_state_dict(state["model"], strict=True, args=args)
 
         # ! ICL analysis
-        if task.cfg.ana_setting in ["zs", "ftzs", "icl"]:
+        if task.cfg.analysis_setting in ["zs", "ftzs", "icl"]:
             for p in model.parameters():
                 p.requires_grad = False
 
