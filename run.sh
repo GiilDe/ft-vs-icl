@@ -73,7 +73,7 @@ bpe_path=$base_dir/gpt_icl/vocab.bpe
 encoder_path=$base_dir/gpt_icl/encoder.json
 dict_path=$base_dir/gpt_icl/$model_name/dict.txt
 output_path=$output_base_dir/${SLURM_JOBID}
-analysis_results_dir=$base_dir/analysis_results/$model_name/${task}_${SLURM_JOBID}
+activations_dir=$base_dir/activations/$model_name/${task}_${SLURM_JOBID}
 model_path=$base_dir/gpt_icl/$model_name/model.pt
 save_dir=$base_dir/gpt_ft/$task/$model_name/${lr}_${SLURM_JOBID}
 
@@ -89,8 +89,8 @@ analysis_setting=ft
 optim_group=attn_kv
 max_epoch=1
 
-rm $analysis_results_dir/ft/record_info.jsonl
-mkdir -p $analysis_results_dir/$analysis_setting
+rm $activations_dir/ft/record_info.jsonl
+mkdir -p $activations_dir/$analysis_setting
 
 python3 scripts/validate.py - \
     --task fs_eval \
@@ -121,9 +121,9 @@ python3 scripts/validate.py - \
     --ddp-backend=c10d \
     --gpt-dict $dict_path \
     --gpt-model-path $model_path \
-    --ana-attn $analyze_attn \
-    --ana-rlt-dir $analysis_results_dir \
-    --ana-setting $analysis_setting \
+    --analyze-attn $analyze_attn \
+    --activations-dir $activations_dir \
+    --analysis-setting $analysis_setting \
     --save-dir $save_dir \
     --save-interval $max_epoch \
     --save-interval-updates 1000000 \
@@ -173,8 +173,8 @@ for analysis_setting in $settings; do
             ;;
     esac
     echo "Evaluate $analysis_setting setting"
-    rm $analysis_results_dir/$analysis_setting/record_info.jsonl
-    mkdir -p $analysis_results_dir/$analysis_setting
+    rm $activations_dir/$analysis_setting/record_info.jsonl
+    mkdir -p $activations_dir/$analysis_setting
 
     python3 scripts/validate.py - \
     --task fs_eval \
@@ -203,15 +203,15 @@ for analysis_setting in $settings; do
     --ddp-backend=c10d \
     --gpt-dict $dict_path \
     --gpt-model-path $model_path \
-    --ana-attn $analyze_attn \
-    --ana-rlt-dir $analysis_results_dir \
-    --ana-setting $analysis_setting \
+    --analyze-attn $analyze_attn \
+    --activations-dir $activations_dir \
+    --analysis-setting $analysis_setting \
     --uid $SLURM_JOBID \
     --distributed-world-size $ngpu \
     --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt
         
     mv artifacts/tmp_results/${SLURM_JOBID}_${analysis_setting}_record_info.jsonl \
-        $analysis_results_dir/$analysis_setting/record_info.jsonl
+        $activations_dir/$analysis_setting/record_info.jsonl
 done
 
 rm -r $save_dir

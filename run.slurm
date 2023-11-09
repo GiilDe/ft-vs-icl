@@ -18,7 +18,7 @@ MODEL_ARCH="gptmodel_large"
 MODEL_NAME="en_dense_lm_${MODEL_SHORT}"
 
 output_base_dir="artifacts/output_dir"
-base_dir="artifacts/base_dir"
+base_dir="artifacts"
 log_dir="artifacts/logs"
 debug_dir="artifacts/debug"
 
@@ -37,7 +37,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
  
   echo run analysis.py
   python3 scripts/analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
-  analysis_results_dir=$base_dir/analysis_results/$MODEL_NAME/${task}_${SLURM_JOBID}
+  activations_dir=$base_dir/activations/$MODEL_NAME/${task}_${SLURM_JOBID}
   
-  rm -r $analysis_results_dir
+  rm -r $activations_dir
 done < $1

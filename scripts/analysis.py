@@ -12,8 +12,8 @@ model = f"en_dense_lm_{model}"
 uid = sys.argv[4]
 base_dir = sys.argv[5]
 
-base_results_dir = base_dir + "/analysis_results"
-model_results_dir = f"{base_results_dir}/{model}"
+artifacts_dir = "artifacts"
+model_results_dir = f"{artifacts_dir}/activations/{model}"
 
 results_dict = {}
 debug_n = 10000
@@ -192,8 +192,8 @@ def main():
     print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    os.mkdirs(f'{base_results_dir}/rlt_json', exist_ok=True)
-    with open(f'{base_results_dir}/rlt_json/{uid}-{task}-{model}.json', 'w') as f:
+    os.mkdirs(f'{artifacts_dir}/results', exist_ok=True)
+    with open(f'{artifacts_dir}/results/{uid}-{task}-{model}.json', 'w') as f:
         json.dump(results_dict, f, indent=2)
     print(f'saving data costs {time.time() - stt_time} seconds')
     stt_time = time.time()

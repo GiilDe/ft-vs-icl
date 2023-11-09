@@ -108,8 +108,8 @@ class FewshotEvalConfig(FairseqDataclass):
     analyze_attn: int = field(
         default=0, metadata={"help": "whether to log the attn hidden results"}
     )
-    analysis_results_dir: str = field(
-        default="/home/user/data/results", metadata={"help": "base directory to save analysis results"}
+    activations_dir: str = field(
+        default="/home/user/data/activations", metadata={"help": "base directory to save activations to analyze"}
     )
     analysis_setting: str = field(
         default="zs", metadata={"help": "analysis setting, could be 'zs', 'icl', 'ft', or 'ftzs'"}
@@ -383,7 +383,7 @@ class FewshotEval(FairseqTask):
                 record_info['attn_q'] = record_info['attn_q'][:, -1, :].tolist()  # (n_layers, q_hidden_dim)
             else:
                 del record_info['attn_q']
-            with open(f'artifacts/tmp_results/{self.cfg.uid}_{self.cfg.analysis_setting}_record_info.jsonl', 'a') as fp:
+            with open(f'artifacts/tmp_activations/{self.cfg.uid}_{self.cfg.analysis_setting}_record_info.jsonl', 'a') as fp:
                 writer = jsonlines.Writer(fp)
                 fcntl.flock(fp, fcntl.LOCK_EX)
                 writer.write(record_info)
