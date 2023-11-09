@@ -5,5 +5,5 @@ en_dense_lm_125m.tar.gz
 *.err
 old/*
 artifacts/*
-!artifacts/logs
+!artifacts/results
 checkpoints/*
