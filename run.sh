@@ -1,5 +1,9 @@
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --ngpu)
+            ngpu="$2"
+            shift 2
+            ;;
         --model_name)
             model_name="$2"
             shift 2
@@ -62,6 +66,7 @@ echo "perm_id: $perm_id"
 echo "lr: $lr"
 echo "clip_norm: $clip_norm"
 echo "per_layer: $per_layer"
+echo "ngpu: $ngpu"
 echo "============================================"
 
 bpe_path=$base_dir/gpt_icl/vocab.bpe
@@ -73,7 +78,6 @@ model_path=$base_dir/gpt_icl/$model_name/model.pt
 save_dir=$base_dir/gpt_ft/$task/$model_name/${lr}_${SLURM_JOBID}
 
 bsz=1
-ngpu=1
 ana_attn=1
 
 mkdir -p $output_path
@@ -114,8 +118,7 @@ python3 scripts/validate.py - \
     --k $icl_k \
     --batch-size $bsz \
     --batch-size-valid $bsz \
-    --ddp-backend=no_c10d \
-    --distributed-no-spawn \
+    --ddp-backend=c10d \
     --gpt-dict $dict_path \
     --gpt-model-path $model_path \
     --ana-attn $ana_attn \
@@ -131,8 +134,6 @@ python3 scripts/validate.py - \
     --distributed-world-size $ngpu \
     --per-layer $per_layer \
     --permut-index $perm_id |& tee $output_path/train_log_$ana_setting.txt
-
-mv artifacts/tmp_ana_rlt/${SLURM_JOBID}_ft_record_info.jsonl $ana_rlt_dir/ft/record_info.jsonl
 
 # =========== Evaluate FT, ZS, ICL Models ============
 n_classes=2 # case sst2, mr, subj
@@ -199,8 +200,7 @@ for ana_setting in $settings; do
     --k $k \
     --batch-size $bsz_eval \
     --batch-size-valid $bsz_eval \
-    --ddp-backend=no_c10d \
-    --distributed-no-spawn \
+    --ddp-backend=c10d \
     --gpt-dict $dict_path \
     --gpt-model-path $model_path \
     --ana-attn $ana_attn \
