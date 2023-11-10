@@ -1,26 +1,27 @@
 import os
 import json
 import numpy as np
-import sys
 import jsonlines
 import time
+from argparse import ArgumentParser
+import torch
+import torch.nn.functional as F
 
-task = sys.argv[1]
-mode = sys.argv[2]
-model = sys.argv[3]
-model = f"en_dense_lm_{model}"
-uid = sys.argv[4]
-base_dir = sys.argv[5]
-
-artifacts_dir = "artifacts"
-model_results_dir = f"{artifacts_dir}/activations/{model}"
-
+device = 'cpu' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
 results_dict = {}
 debug_n = 10000
 
 
-def load_info(analysis_setting):
-    results_dir = f"{model_results_dir}/{task}_{uid}/{analysis_setting}"
+def to_tensor(x):
+    if isinstance(x, list):
+        x = torch.tensor(x)
+    elif isinstance(x, np.ndarray):
+        x = torch.from_numpy(x)
+    return x.to(device=device)
+
+
+def load_info(args, analysis_setting):
+    results_dir = f"{args.base_dir}/activations/{args.model}/{args.task}_{args.uid}/{analysis_setting}"
     info = [None] * debug_n
     with open(f"{results_dir}/record_info.jsonl", "r") as f:
         i = 0
@@ -36,19 +37,6 @@ def load_info(analysis_setting):
     return info
 
 
-def calc_cos_sim(v1, v2):
-    num = (v1 * v2).sum(axis=-1)  # dot product
-    denom = np.linalg.norm(v1, axis=-1) * np.linalg.norm(v2, axis=-1) + 1e-20  # length
-    res = num / denom
-    return res
-
-
-def np_softmax(x, axis=-1):
-    x -= np.max(x, axis=axis, keepdims=True)
-    x = np.exp(x) / np.sum(np.exp(x), axis=axis, keepdims=True)
-    return x
-
-
 def check_answer(info_item):
     return info_item['gold_label'] == info_item['pred_label']
 
@@ -58,21 +46,18 @@ def is_same_pred(zsl_item, update_item):
 
 
 def normalize_hidden(hidden):
-    norm = np.linalg.norm(hidden, axis=-1) + 1e-20  # length
-    norm = norm[:, :, np.newaxis]
-    hidden = hidden / norm
-    return hidden
+    return F.normalize(hidden, p=2, dim=-1)
+ 
 
-
-def prepare_hiddens(infos, mode, key, normalize=False):
+def prepare_hiddens(infos, mode, key):
     zs_info, icl_info, ftzs_info = infos
     if mode == 'all':
-        # ====================  check all hidden ======================
+        # check all hidden
         zs_hidden = [info_item[key] for info_item in zs_info]
         icl_hidden = [info_item[key] for info_item in icl_info]
         ftzs_hidden = [info_item[key] for info_item in ftzs_info]
     elif  mode == 'f2t':
-        # ================== check False->True hidden =================
+        # check only False->True hiddens
         zs_hidden = []
         icl_hidden = []
         ftzs_hidden = []
@@ -83,39 +68,38 @@ def prepare_hiddens(infos, mode, key, normalize=False):
                 icl_hidden.append(icl_info[i][key])
                 ftzs_hidden.append(ftzs_info[i][key])
 
-    if normalize:
-        zs_hidden = normalize_hidden(zs_hidden)
-        icl_hidden = normalize_hidden(icl_hidden)
-        ftzs_hidden = normalize_hidden(ftzs_hidden)
-
     return zs_hidden, icl_hidden, ftzs_hidden
 
 
 def analyze_sim(infos, mode, key, normalize=False):
      # n_examples, n_layers, hidden_dim
-    zs_hidden, icl_hidden, ftzs_hidden = prepare_hiddens(
-        infos, mode, key, normalize=normalize
-    )
-    zs_hidden = np.array(zs_hidden)
-    icl_hidden = np.array(icl_hidden)
-    ftzs_hidden = np.array(ftzs_hidden)
+    zs_hidden, icl_hidden, ftzs_hidden = prepare_hiddens(infos, mode, key)
+    
+    zs_hidden = to_tensor(zs_hidden)
+    icl_hidden = to_tensor(icl_hidden)
+    ftzs_hidden = to_tensor(ftzs_hidden)
+    
+    if normalize:
+        zs_hidden = normalize_hidden(zs_hidden)
+        icl_hidden = normalize_hidden(icl_hidden)
+        ftzs_hidden = normalize_hidden(ftzs_hidden)
 
     icl_updates = icl_hidden - zs_hidden
     ftzs_updates = ftzs_hidden - zs_hidden
 
     print('======' * 5, f'analyzing {key}', '======' * 5)
 
-    cos_sim = calc_cos_sim(icl_updates, ftzs_updates)
-    cos_sim = cos_sim.mean(axis=0)
+    cos_sim = F.cosine_similarity(icl_updates, ftzs_updates, dim=-1)
+    cos_sim = cos_sim.mean(axis=0).cpu().numpy()
     results_dict['SimAOU'] = cos_sim.tolist()
     print("per-layer updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
     cos_sim = cos_sim.mean()
     print("overall updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
     print()
 
-    random_updates = np.random.random(ftzs_updates.shape)
-    baseline_cos_sim = calc_cos_sim(icl_updates, random_updates)
-    baseline_cos_sim = baseline_cos_sim.mean(axis=0)
+    random_updates = to_tensor(np.random.random(ftzs_updates.shape))
+    baseline_cos_sim = F.cosine_similarity(icl_updates, random_updates, dim=-1)
+    baseline_cos_sim = baseline_cos_sim.mean(axis=0).cpu().numpy()
     results_dict['Random SimAOU'] = baseline_cos_sim.tolist()
     print("per-layer updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
     baseline_cos_sim = baseline_cos_sim.mean()
@@ -123,29 +107,29 @@ def analyze_sim(infos, mode, key, normalize=False):
     print()
 
 
-def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, diff=True):
+def analyze_attn_map(infos, mode, key, softmax=False, 
+                     sim_func=lambda x, y: F.cosine_similarity(x, y, dim=-1), 
+                     diff=True):
     # n_examples, n_layers, n_heads, len
-    zs_attn_map, icl_attn_map, ftzs_attn_map = prepare_hiddens(
-        infos, mode, key, normalize=False
-    )     
+    zs_attn_map, icl_attn_map, ftzs_attn_map = prepare_hiddens(infos, mode, key)     
     # pad to max len
     pad_value = -1e20 if softmax else 0
     max_zs_len = max([len(zs_attn_map[i][0][0]) for i in range(len(zs_attn_map))])
-    zs_attn_map = np.array([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in zs_attn_map])
-    icl_attn_map = np.array([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in icl_attn_map])
-    ftzs_attn_map = np.array([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in ftzs_attn_map])
+    zs_attn_map = to_tensor([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in zs_attn_map])
+    icl_attn_map = to_tensor([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in icl_attn_map])
+    ftzs_attn_map = to_tensor([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in ftzs_attn_map])
     
     if softmax:
-        zs_attn_map = np_softmax(zs_attn_map, axis=-1)
-        icl_attn_map = np_softmax(icl_attn_map, axis=-1)
-        ftzs_attn_map = np_softmax(ftzs_attn_map, axis=-1)
+        zs_attn_map = F.softmax(zs_attn_map, dim=-1)
+        icl_attn_map = F.softmax(icl_attn_map, dim=-1)
+        ftzs_attn_map = F.softmax(ftzs_attn_map, dim=-1)
     
     print('======' * 5, f'analyzing {key}, softmax={softmax}', '======' * 5)
     if diff:
         icl_attn_map_update = icl_attn_map - zs_attn_map
         ft_attn_map_update = ftzs_attn_map - zs_attn_map
         sim = sim_func(icl_attn_map_update, ft_attn_map_update)
-        sim = sim.mean(axis=2).mean(axis=0)
+        sim = sim.mean(axis=2).mean(axis=0).cpu().numpy()
         results_dict['ICL-FTZS SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
@@ -153,14 +137,14 @@ def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, dif
         print()
     else:
         sim = sim_func(icl_attn_map, zs_attn_map)
-        sim = sim.mean(axis=2).mean(axis=0)
+        sim = sim.mean(axis=2).mean(axis=0).cpu().numpy()
         results_dict['ZSL SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
         print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
         print()
 
-        sim = sim_func(icl_attn_map, ftzs_attn_map).mean(axis=2).mean(axis=0)
+        sim = sim_func(icl_attn_map, ftzs_attn_map).mean(axis=2).mean(axis=0).cpu().numpy()
         results_dict['SimAM'] = sim.tolist()
         print("per-layer direct sim (icl)&(ftzs):\n", np.around(sim, 4))
         mean_sim = sim.mean()
@@ -168,35 +152,44 @@ def analyze_attn_map(infos, mode, key, softmax=False, sim_func=calc_cos_sim, dif
         print()
 
 
-def main():
+def main(args):
+
     stt_time = time.time()
-    ftzs_info = load_info('ftzs')
+    ftzs_info = load_info(args, 'ftzs')
     print(f'loading ftzs data costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    zs_info = load_info('zs')
+    zs_info = load_info(args, 'zs')
     print(f'loading zs data costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    icl_info = load_info('icl')
+    icl_info = load_info(args, 'icl')
     print(f'loading icl data costs {time.time() - stt_time} seconds')
     
     infos = [zs_info, icl_info, ftzs_info]
     stt_time = time.time()
-    analyze_sim(infos, mode, 'self_attn_out_hiddens', normalize=True)
+    analyze_sim(infos, args.mode, 'self_attn_out_hiddens', normalize=True)
     print(f'analyze_sim costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    analyze_attn_map(infos, mode, 'attn_map', softmax=False, 
-                     sim_func=calc_cos_sim, diff=True)
+    analyze_attn_map(infos, args.mode, 'attn_map', softmax=False, diff=True)
     print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    os.mkdirs(f'{artifacts_dir}/results', exist_ok=True)
-    with open(f'{artifacts_dir}/results/{uid}-{task}-{model}.json', 'w') as f:
+    os.makedirs(f'{args.base_dir}/results', exist_ok=True)
+    with open(f'{args.base_dir}/results/{args.name}.json', 'w') as f:
         json.dump(results_dict, f, indent=2)
     print(f'saving data costs {time.time() - stt_time} seconds')
     stt_time = time.time()
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser()
+    parser.add_argument("--task", type=str, default="sst-2")
+    parser.add_argument("--mode", type=str, default="all")
+    parser.add_argument("--model", type=str, default="base")
+    parser.add_argument("--uid", type=str, default="0")
+    parser.add_argument("--base_dir", type=str, default="artifacts")
+    parser.add_argument("--name", type=str)
+    args = parser.parse_args()
+    args.model = f"en_dense_lm_{args.model}"
+    main(args)

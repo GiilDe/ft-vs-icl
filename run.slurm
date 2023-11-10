@@ -11,6 +11,7 @@
 #SBATCH --mem=100000 # CPU memory (MB)
 #SBATCH --cpus-per-task=4 # CPU cores per process
 
+DEBUG_MODE=true
 echo HELLO $SLURM_JOBID
 
 MODEL_SHORT="1_3b"
@@ -24,10 +25,17 @@ debug_dir="artifacts/debug"
 
 ngpu=1
 
+mkdir -p $base_dir
+mkdir -p $output_base_dir
+mkdir -p $log_dir
+mkdir -p $debug_dir
+mkdir -p $base_dir/activations
+mkdir -p $base_dir/tmp_activations
+
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
   name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_clip_norm_${clip_norm}"
   echo $name
-  
+
   echo run.sh
   bash run.sh --model_name $MODEL_NAME --arch $MODEL_ARCH \
   --task $task --icl_k $num_demonstrations \
@@ -36,8 +44,15 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   --per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
   echo run analysis.py
-  python3 scripts/analysis.py $task all $MODEL_SHORT ${SLURM_JOBID} $base_dir > "$log_dir/${name}.txt"  
+  python3 scripts/analysis.py --task $task --mode all \
+    --model $MODEL_SHORT --uid ${SLURM_JOBID} \
+    --base_dir $base_dir --name $name > "$log_dir/${name}.txt"  
   activations_dir=$base_dir/activations/$MODEL_NAME/${task}_${SLURM_JOBID}
   
-  rm -r $activations_dir
+  if [ "$DEBUG_MODE" = true ]; then
+    echo "DEBUG MODE: does not remove $activations_dir"
+  else
+    rm -r $activations_dir
+  fi
+  
 done < $1

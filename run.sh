@@ -92,7 +92,7 @@ max_epoch=1
 rm $activations_dir/ft/record_info.jsonl
 mkdir -p $activations_dir/$analysis_setting
 
-python3 scripts/validate.py - \
+python3 scripts/trainer.py - \
     --task fs_eval \
     --tokens-per-sample 2048  \
     --criterion fs_ft \
@@ -176,7 +176,7 @@ for analysis_setting in $settings; do
     rm $activations_dir/$analysis_setting/record_info.jsonl
     mkdir -p $activations_dir/$analysis_setting
 
-    python3 scripts/validate.py - \
+    python3 scripts/trainer.py - \
     --task fs_eval \
     --tokens-per-sample 2048  \
     --criterion fs_eval \
@@ -210,7 +210,7 @@ for analysis_setting in $settings; do
     --distributed-world-size $ngpu \
     --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt
         
-    mv artifacts/tmp_results/${SLURM_JOBID}_${analysis_setting}_record_info.jsonl \
+    mv artifacts/tmp_activations/${SLURM_JOBID}_${analysis_setting}_record_info.jsonl \
         $activations_dir/$analysis_setting/record_info.jsonl
 done
 
