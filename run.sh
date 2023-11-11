@@ -1,5 +1,9 @@
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --bsz)
+            bsz="$2"
+            shift 2
+            ;;
         --ngpu)
             ngpu="$2"
             shift 2
@@ -67,6 +71,7 @@ echo "lr: $lr"
 echo "clip_norm: $clip_norm"
 echo "per_layer: $per_layer"
 echo "ngpu: $ngpu"
+echo "bsz: $bsz"
 echo "============================================"
 
 bpe_path=$base_dir/gpt_icl/vocab.bpe
@@ -77,7 +82,6 @@ activations_dir=$base_dir/activations/$model_name/${task}_${SLURM_JOBID}
 model_path=$base_dir/gpt_icl/$model_name/model.pt
 save_dir=$base_dir/gpt_ft/$task/$model_name/${lr}_${SLURM_JOBID}
 
-bsz=1
 analyze_attn=1
 
 mkdir -p $output_path

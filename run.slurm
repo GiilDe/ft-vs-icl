@@ -23,6 +23,7 @@ base_dir="artifacts"
 log_dir="artifacts/logs"
 debug_dir="artifacts/debug"
 
+bsz=1
 ngpu=1
 
 mkdir -p $base_dir
@@ -33,14 +34,14 @@ mkdir -p $base_dir/activations
 mkdir -p $base_dir/tmp_activations
 
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
-  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_clip_norm_${clip_norm}"
+  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}"
   echo $name
 
   echo run.sh
   bash run.sh --model_name $MODEL_NAME --arch $MODEL_ARCH \
   --task $task --icl_k $num_demonstrations \
   --seed $seed --perm_id $perm_id --output_base_dir $output_base_dir --base_dir $base_dir \
-  --lr $lr --clip_norm $clip_norm --ngpu $ngpu \
+  --lr $lr --clip_norm $clip_norm --ngpu $ngpu --bsz $bsz \
   --per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
   echo run analysis.py
