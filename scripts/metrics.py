@@ -176,7 +176,7 @@ def main(args):
     print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    os.makedirs(f'{args.base_dir}/results', exist_ok=True)
+    os.makedirs(f'{args.base_dir}/results/{args.model}', exist_ok=True)
     with open(f'{args.base_dir}/results/{args.name}.json', 'w') as f:
         json.dump(results_dict, f, indent=2)
     print(f'saving data costs {time.time() - stt_time} seconds')

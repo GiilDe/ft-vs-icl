@@ -28,13 +28,13 @@ ngpu=1
 
 mkdir -p $base_dir
 mkdir -p $output_base_dir
-mkdir -p $log_dir
+mkdir -p $log_dir/$MODEL_NAME
 mkdir -p $debug_dir
 mkdir -p $base_dir/activations
 mkdir -p $base_dir/tmp_activations
 
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
-  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_k_${num_demonstrations}_seed_${seed}_perm_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}"
+  name="${MODEL_NAME}/${task}_per_layer_${per_layer}_k_${num_demonstrations}_seed_${seed}_perm_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}"
   echo $name
 
   echo run.sh
