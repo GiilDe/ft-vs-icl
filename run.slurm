@@ -34,7 +34,7 @@ mkdir -p $base_dir/activations
 mkdir -p $base_dir/tmp_activations
 
 while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
-  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_num_demonstrations_${num_demonstrations}_seed_${seed}_perm_id_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}"
+  name="${MODEL_SHORT}_${task}_per_layer_${per_layer}_k_${num_demonstrations}_seed_${seed}_perm_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}"
   echo $name
 
   echo run.sh
@@ -44,8 +44,8 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   --lr $lr --clip_norm $clip_norm --ngpu $ngpu --bsz $bsz \
   --per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
-  echo run analysis.py
-  python3 scripts/analysis.py --task $task --mode all \
+  echo run metrics.py
+  python3 scripts/metrics.py --task $task --mode all \
     --model $MODEL_SHORT --uid ${SLURM_JOBID} \
     --base_dir $base_dir --name $name > "$log_dir/${name}.txt"  
   activations_dir=$base_dir/activations/$MODEL_NAME/${task}_${SLURM_JOBID}
