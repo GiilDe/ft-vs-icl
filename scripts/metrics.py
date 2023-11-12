@@ -87,73 +87,51 @@ def analyze_sim(infos, mode, key, normalize=False):
     icl_updates = icl_hidden - zs_hidden
     ftzs_updates = ftzs_hidden - zs_hidden
 
-    print('======' * 5, f'analyzing {key}', '======' * 5)
-
     cos_sim = F.cosine_similarity(icl_updates, ftzs_updates, dim=-1)
-    cos_sim = cos_sim.mean(axis=0).cpu().numpy()
-    results_dict['SimAOU'] = cos_sim.tolist()
-    print("per-layer updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
-    cos_sim = cos_sim.mean()
-    print("overall updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
-    print()
-
+    cos_sim = cos_sim.mean(dim=0).cpu().numpy()
     random_updates = to_tensor(np.random.random(ftzs_updates.shape))
     baseline_cos_sim = F.cosine_similarity(icl_updates, random_updates, dim=-1)
-    baseline_cos_sim = baseline_cos_sim.mean(axis=0).cpu().numpy()
-    results_dict['Random SimAOU'] = baseline_cos_sim.tolist()
-    print("per-layer updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
-    baseline_cos_sim = baseline_cos_sim.mean()
-    print("overall updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
-    print()
+    baseline_cos_sim = baseline_cos_sim.mean(dim=0).cpu().numpy()
+    return cos_sim, baseline_cos_sim
 
+
+def pad_attn_map(attn_map, max_len, pad_value):
+    padded_map = torch.empty(len(attn_map), len(attn_map[0]), len(attn_map[0][0]), max_len)
+    padded_map.fill_(pad_value)
+    for i in range(len(attn_map)):
+        padded_map[i, :, :, -len(attn_map[i][0][0]):] = torch.Tensor(attn_map[i])
+    return padded_map
 
 def analyze_attn_map(infos, mode, key, softmax=False, 
-                     sim_func=lambda x, y: F.cosine_similarity(x, y, dim=-1), 
+                     sim_func=lambda x, y: F.cosine_similarity(x, y, dim=-1),
                      diff=True):
     # n_examples, n_layers, n_heads, len
     zs_attn_map, icl_attn_map, ftzs_attn_map = prepare_hiddens(infos, mode, key)     
     # pad to max len
+    print('pad')
     pad_value = -1e20 if softmax else 0
     max_zs_len = max([len(zs_attn_map[i][0][0]) for i in range(len(zs_attn_map))])
-    zs_attn_map = to_tensor([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in zs_attn_map])
-    icl_attn_map = to_tensor([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in icl_attn_map])
-    ftzs_attn_map = to_tensor([[[[pad_value] * (max_zs_len - len(head)) + head for head in layer] for layer in example] for example in ftzs_attn_map])
+    zs_attn_map = pad_attn_map(zs_attn_map, max_zs_len, pad_value)
+    icl_attn_map = pad_attn_map(icl_attn_map, max_zs_len, pad_value)
+    ftzs_attn_map = pad_attn_map(ftzs_attn_map, max_zs_len, pad_value)
     
+    print('compute')
     if softmax:
         zs_attn_map = F.softmax(zs_attn_map, dim=-1)
         icl_attn_map = F.softmax(icl_attn_map, dim=-1)
         ftzs_attn_map = F.softmax(ftzs_attn_map, dim=-1)
     
-    print('======' * 5, f'analyzing {key}, softmax={softmax}', '======' * 5)
     if diff:
-        icl_attn_map_update = icl_attn_map - zs_attn_map
-        ft_attn_map_update = ftzs_attn_map - zs_attn_map
-        sim = sim_func(icl_attn_map_update, ft_attn_map_update)
-        sim = sim.mean(axis=2).mean(axis=0).cpu().numpy()
-        results_dict['ICL-FTZS SimAM'] = sim.tolist()
-        print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
-        mean_sim = sim.mean()
-        print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
-        print()
-    else:
-        sim = sim_func(icl_attn_map, zs_attn_map)
-        sim = sim.mean(axis=2).mean(axis=0).cpu().numpy()
-        results_dict['ZSL SimAM'] = sim.tolist()
-        print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
-        mean_sim = sim.mean()
-        print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
-        print()
+        icl_attn_map = icl_attn_map - zs_attn_map
+        ft_attn_map = ftzs_attn_map - zs_attn_map
 
-        sim = sim_func(icl_attn_map, ftzs_attn_map).mean(axis=2).mean(axis=0).cpu().numpy()
-        results_dict['SimAM'] = sim.tolist()
-        print("per-layer direct sim (icl)&(ftzs):\n", np.around(sim, 4))
-        mean_sim = sim.mean()
-        print("overall direct sim (icl)&(ftzs):\n", np.around(mean_sim, 4))
-        print()
+    sim = sim_func(icl_attn_map, ft_attn_map)
+    sim = sim.mean(dim=2).mean(dim=0).cpu().numpy()
+
+    return sim
 
 
 def main(args):
-
     stt_time = time.time()
     ftzs_info = load_info(args, 'ftzs')
     print(f'loading ftzs data costs {time.time() - stt_time} seconds')
@@ -167,14 +145,35 @@ def main(args):
     print(f'loading icl data costs {time.time() - stt_time} seconds')
     
     infos = [zs_info, icl_info, ftzs_info]
-    stt_time = time.time()
-    analyze_sim(infos, args.mode, 'self_attn_out_hiddens', normalize=True)
-    print(f'analyze_sim costs {time.time() - stt_time} seconds')
+    # stt_time = time.time()
+    # key = 'self_attn_out_hiddens'
+    # print('======' * 5, f'analyzing {key}', '======' * 5)
+    # cos_sim, baseline_cos_sim = analyze_sim(infos, args.mode, key, normalize=True)
+    # results_dict['SimAOU'] = cos_sim.tolist()
+    # print("per-layer updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
+    # cos_sim = cos_sim.mean()
+    # print("overall updates sim (icl-zs)&(ftzs-zs):\n", np.around(cos_sim, 4))
+    # print()
+    # results_dict['Random SimAOU'] = baseline_cos_sim.tolist()
+    # print("per-layer updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
+    # baseline_cos_sim = baseline_cos_sim.mean()
+    # print("overall updates sim (icl-zs)&(random):\n", np.around(baseline_cos_sim, 4))
+    # print()
+    # print(f'analyze_sim costs {time.time() - stt_time} seconds')
     
     stt_time = time.time()
-    analyze_attn_map(infos, args.mode, 'attn_map', softmax=False, diff=True)
+    key = 'attn_map'
+    softmax = False
+    print('======' * 5, f'analyzing {key}, softmax={softmax}', '======' * 5)
+    sim = analyze_attn_map(infos, args.mode, key, softmax=softmax, diff=True)
+    results_dict['ICL-FTZS SimAM'] = sim.tolist()
+    print("per-layer direct sim (icl)&(zs):\n", np.around(sim, 4))
+    mean_sim = sim.mean()
+    print("overall direct sim (icl)&(zs):\n", np.around(mean_sim, 4))
+    print()
     print(f'analyze_attn_map (w/o softmax) costs {time.time() - stt_time} seconds')
-    
+
+
     stt_time = time.time()
     os.makedirs(f'{args.base_dir}/results/{args.model}', exist_ok=True)
     with open(f'{args.base_dir}/results/{args.name}.json', 'w') as f:

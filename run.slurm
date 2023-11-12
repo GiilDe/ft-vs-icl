@@ -9,7 +9,7 @@
 #SBATCH --gpus=4 # GPUs in total
 #SBATCH --signal=USR1@120 # how to end job when time’s up
 #SBATCH --mem=100000 # CPU memory (MB)
-#SBATCH --cpus-per-task=4 # CPU cores per process
+#SBATCH --cpus-per-task=16 # CPU cores per process
 
 DEBUG_MODE=true
 echo HELLO $SLURM_JOBID
@@ -41,7 +41,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   bash run.sh --model_name $MODEL_NAME --arch $MODEL_ARCH \
   --task $task --icl_k $num_demonstrations \
   --seed $seed --perm_id $perm_id --output_base_dir $output_base_dir --base_dir $base_dir \
-  --lr $lr --clip_norm $clip_norm --ngpu $ngpu --bsz $bsz \
+  --lr $lr --clip_norm $clip_norm --ngpu $ngpu --bsz $bsz --uid $SLURM_JOBID \
   --per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
   echo run metrics.py

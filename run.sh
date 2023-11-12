@@ -1,5 +1,9 @@
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --uid)
+            uid="$2"
+            shift 2
+            ;;
         --bsz)
             bsz="$2"
             shift 2
@@ -72,15 +76,16 @@ echo "clip_norm: $clip_norm"
 echo "per_layer: $per_layer"
 echo "ngpu: $ngpu"
 echo "bsz: $bsz"
+echo "uid: $uid"
 echo "============================================"
 
 bpe_path=$base_dir/gpt_icl/vocab.bpe
 encoder_path=$base_dir/gpt_icl/encoder.json
 dict_path=$base_dir/gpt_icl/$model_name/dict.txt
-output_path=$output_base_dir/${SLURM_JOBID}
-activations_dir=$base_dir/activations/$model_name/${task}_${SLURM_JOBID}
+output_path=$output_base_dir/$uid
+activations_dir=$base_dir/activations/$model_name/${task}_$uid
 model_path=$base_dir/gpt_icl/$model_name/model.pt
-save_dir=$base_dir/gpt_ft/$task/$model_name/${lr}_${SLURM_JOBID}
+save_dir=$base_dir/gpt_ft/$task/$model_name/${lr}_$uid
 
 analyze_attn=1
 
@@ -133,7 +138,7 @@ python3 scripts/trainer.py - \
     --save-interval-updates 1000000 \
     --validate-interval 1000000 \
     --disable-validation \
-    --uid $SLURM_JOBID \
+    --uid $uid \
     --optim-group $optim_group \
     --distributed-world-size $ngpu \
     --per-layer $per_layer \
@@ -156,6 +161,7 @@ fi
 
 bsz_eval=$((n_classes * bsz))
 settings="ftzs zs icl"
+declare -i i=1
 
 for analysis_setting in $settings; do
     case $analysis_setting in
@@ -181,41 +187,43 @@ for analysis_setting in $settings; do
     mkdir -p $activations_dir/$analysis_setting
 
     python3 scripts/trainer.py - \
-    --task fs_eval \
-    --tokens-per-sample 2048  \
-    --criterion fs_eval \
-    --arch $arch  \
-    --gpt2-vocab-bpe $bpe_path  \
-    --gpt2-encoder-json $encoder_path \
-    --log-format simple  \
-    --max-epoch 1 \
-    --required-batch-size-multiple 1 \
-    --log-interval 1 \
-    --warmup-updates 0 \
-    --optimizer sgd \
-    --max-update 0 \
-    --fp16 \
-    --eval-data $task \
-    --fp16-init-scale 4 \
-    --fp16-scale-window 256 \
-    --seed $seed \
-    --reset-dataloader \
-    --no-save \
-    --k $k \
-    --batch-size $bsz_eval \
-    --batch-size-valid $bsz_eval \
-    --ddp-backend=c10d \
-    --gpt-dict $dict_path \
-    --gpt-model-path $model_path \
-    --analyze-attn $analyze_attn \
-    --activations-dir $activations_dir \
-    --analysis-setting $analysis_setting \
-    --uid $SLURM_JOBID \
-    --distributed-world-size $ngpu \
-    --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt
-        
-    mv artifacts/tmp_activations/${SLURM_JOBID}_${analysis_setting}_record_info.jsonl \
+        --task fs_eval \
+        --tokens-per-sample 2048  \
+        --criterion fs_eval \
+        --arch $arch  \
+        --gpt2-vocab-bpe $bpe_path  \
+        --gpt2-encoder-json $encoder_path \
+        --log-format simple  \
+        --max-epoch 1 \
+        --required-batch-size-multiple 1 \
+        --log-interval 1 \
+        --warmup-updates 0 \
+        --optimizer sgd \
+        --max-update 0 \
+        --fp16 \
+        --eval-data $task \
+        --fp16-init-scale 4 \
+        --fp16-scale-window 256 \
+        --seed $seed \
+        --reset-dataloader \
+        --no-save \
+        --k $k \
+        --batch-size $bsz_eval \
+        --batch-size-valid $bsz_eval \
+        --ddp-backend=c10d \
+        --gpt-dict $dict_path \
+        --gpt-model-path $model_path \
+        --analyze-attn $analyze_attn \
+        --activations-dir $activations_dir \
+        --analysis-setting $analysis_setting \
+        --uid $uid \
+        --distributed-world-size $ngpu \
+        --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt;
+            
+    mv artifacts/tmp_activations/${uid}_${analysis_setting}_record_info.jsonl \
         $activations_dir/$analysis_setting/record_info.jsonl
+    
+    i+=1
 done
 
 rm -r $save_dir
