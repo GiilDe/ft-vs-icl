@@ -33,8 +33,8 @@ mkdir -p $debug_dir
 mkdir -p $base_dir/activations
 mkdir -p $base_dir/tmp_activations
 
-while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer; do
-  name="${MODEL_NAME}/${task}_per_layer_${per_layer}_k_${num_demonstrations}_seed_${seed}_perm_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}"
+while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_layer model_trained; do
+  name="${MODEL_NAME}/${task}_per_layer_${per_layer}_k_${num_demonstrations}_seed_${seed}_perm_${perm_id}_lr_${lr}_bsz_${bsz}_clip_norm_${clip_norm}_model_trained_${model_trained}"
   echo $name
 
   echo run.sh
@@ -42,7 +42,7 @@ while IFS=' ' read -r task num_demonstrations seed perm_id lr clip_norm per_laye
   --task $task --icl_k $num_demonstrations \
   --seed $seed --perm_id $perm_id --output_base_dir $output_base_dir --base_dir $base_dir \
   --lr $lr --clip_norm $clip_norm --ngpu $ngpu --bsz $bsz --uid $SLURM_JOBID \
-  --per_layer $per_layer > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
+  --per_layer $per_layer --model_trained $model_trained > "$debug_dir/${name}.out" 2> "$debug_dir/${name}.err"
  
   echo run metrics.py
   python3 scripts/metrics.py --task $task --mode all \

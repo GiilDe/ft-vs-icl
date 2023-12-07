@@ -7,3 +7,8 @@ old/*
 artifacts/*
 !artifacts/results
 checkpoints/*
+base_dir/gpt_icl/encoder.json
+base_dir/gpt_icl/vocab.bpe
+base_dir/gpt_icl/en_dense_lm_1_3b/en_dense_lm_1_3b/dict.txt
+base_dir/gpt_icl/en_dense_lm_1_3b/en_dense_lm_1_3b/model.pt
+struprompting/struprompting.egg-info/PKG-INFO

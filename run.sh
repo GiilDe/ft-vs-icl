@@ -56,6 +56,10 @@ while [[ $# -gt 0 ]]; do
             per_layer="$2"
             shift 2
             ;;
+        --model_trained)
+            model_trained="$2"
+            shift 2
+            ;;
         *)
             echo "!!!!! Unknown option: $1 !!!!!"
             exit 1
@@ -77,6 +81,7 @@ echo "per_layer: $per_layer"
 echo "ngpu: $ngpu"
 echo "bsz: $bsz"
 echo "uid: $uid"
+echo "model_trained: $model_trained"
 echo "============================================"
 
 bpe_path=$base_dir/gpt_icl/vocab.bpe
@@ -142,6 +147,7 @@ python3 scripts/trainer.py - \
     --optim-group $optim_group \
     --distributed-world-size $ngpu \
     --per-layer $per_layer \
+    --model-trained $model_trained \
     --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt
 
 # =========== Evaluate FT, ZS, ICL Models ============
@@ -218,6 +224,7 @@ for analysis_setting in $settings; do
         --analysis-setting $analysis_setting \
         --uid $uid \
         --distributed-world-size $ngpu \
+        --model-trained $model_trained \
         --permut-index $perm_id |& tee $output_path/train_log_$analysis_setting.txt;
             
     mv artifacts/tmp_activations/${uid}_${analysis_setting}_record_info.jsonl \

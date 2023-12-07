@@ -36,6 +36,9 @@ class GPTModelConfig(TransformerLanguageModelConfig):
         default="",
         metadata={"help": "gpt checkpoint path"},
     )
+    model_trained: str = field(
+        default=1,
+    )
 
 
 @register_model("gptmodel", dataclass=GPTModelConfig)
@@ -53,7 +56,19 @@ class GPTmodel(TransformerLanguageModel):
 
         if args.gpt_model_path != "":
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
-            model.load_state_dict(state["model"], strict=True, args=args)
+            if not bool(strtobool(args.model_trained)):
+                state_ = {
+                    k: v
+                    for k, v in state["model"].items()
+                    if (
+                        k in {"decoder.embed_positions._float_tensor", "decoder.embed_tokens.weight"} # embeddings
+                        or "layer_norm" in k # layer norm
+                        or k == "decoder.output_projection.weight" # output projection to vocabulary
+                    )
+                }
+                model.load_state_dict(state_, strict=False, args=args)
+            else:
+                model.load_state_dict(state["model"], strict=True, args=args)
 
         # ! ICL analysis
         if task.cfg.analysis_setting in ["zs", "ftzs", "icl"]:
