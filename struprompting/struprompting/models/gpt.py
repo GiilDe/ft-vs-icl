@@ -56,7 +56,9 @@ class GPTmodel(TransformerLanguageModel):
 
         if args.gpt_model_path != "":
             state = checkpoint_utils.load_checkpoint_to_cpu(args.gpt_model_path)
-            if not bool(strtobool(args.model_trained)):
+            if (
+                not bool(strtobool(args.model_trained))
+            ) and task.cfg.analysis_setting != "ftzs":  # ftzs loads the ft weights.     
                 state_ = {
                     k: v
                     for k, v in state["model"].items()
